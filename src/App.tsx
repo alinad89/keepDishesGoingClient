@@ -1,4 +1,4 @@
-import './App.css'
+
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import HomePage from "./pages/HomePage.tsx";
@@ -10,35 +10,45 @@ const queryClient = new QueryClient()
 const theme = createTheme({
     palette: {
         mode: "light",
-        primary: {
-            main: "#2e7d32",
-        },
-        secondary: {
-            main: "#81c784",
-        },
+        primary: { main: "#247329" },
+        secondary: { main: "#579F5A" },
         background: {
             default: "#f1f8f6",
             paper: "#ffffff",
         },
-        error: {
-            main: "#d32f2f",
-        },
     },
     typography: {
-        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-        h1: {
-            fontSize: "2.5rem",
-            fontWeight: 600,
-            color: "#2e7d32",
-        },
-        h2: {
-            fontSize: "2rem",
-            fontWeight: 500,
-            color: "#388e3c",
-        },
-        button: {
-            textTransform: "none",
-            fontWeight: 600,
+        fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+        h1: { fontSize: "3rem", fontWeight: 700, color: "#1f7025" },
+        h2: { fontSize: "2.25rem", fontWeight: 600, color: "#155819" },
+        h6: { fontSize: "1.45rem", fontWeight: 600, color: "#2f773d" },
+        body1: { fontSize: "1.1rem", fontWeight: 400, color: "#124314" },
+        button: { textTransform: "none", fontWeight: 600 },
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    boxShadow: "none",
+                    transition: "all 0.3s ease",
+                },
+                containedPrimary: {
+                    backgroundColor: "rgba(36, 115, 41, 0.1)",
+                    color: "#247329",
+                    "&:hover": {
+                        backgroundColor: "#247329",
+                        color: "#fff",
+                    },
+                },
+                containedSecondary: {
+                    backgroundColor: "rgba(87, 159, 90, 0.1)",
+                    color: "#579F5A",
+                    "&:hover": {
+                        backgroundColor: "#579F5A",
+                        color: "#fff",
+                    },
+                },
+            },
         },
     },
 });
