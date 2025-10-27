@@ -1,110 +1,126 @@
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+// src/pages/HomeLanding.tsx
+import { Box, Container, Typography, Button, Card, CardContent, CardActions } from "@mui/material";
 import { Link } from "react-router-dom";
-
 import PersonIcon from "@mui/icons-material/Person";
 import StoreIcon from "@mui/icons-material/Store";
 
-const cardBaseStyles = {
-    flex: { xs: "1 1 100%", sm: "1 1 45%", md: "1 1 30%" },
-    maxWidth: 400,
+const cardSx = {
+    width: 340,
+    maxWidth: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
     p: 3,
     textAlign: "center",
     borderRadius: 3,
-    backdropFilter: "blur(4px)",
-    bgcolor: "rgba(255, 255, 255, 0.75)",
+    bgcolor: "rgba(255,255,255,0.08)",
+    color: "#eaf6ef",
+    border: "1px solid rgba(255,255,255,.12)",
+    backdropFilter: "blur(10px)",
 };
 
-function CenteredIcon({ children }: { children: React.ReactNode }) {
-    return <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>{children}</Box>;
-}
-
-export default function HomePage() {
+export default function HomeLanding() {
     return (
         <Box
             sx={{
+                minHeight: "calc(100vh - 72px)",
                 position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: "calc(100vh - 64px)",
-                width: "100%",
-                px: { xs: 2, md: 8 },
-                backgroundImage: `url("./dish.jpg")`,
+                overflow: "hidden",
+                // dish.jpg as background
+                backgroundImage: `url('/dish.jpg')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
+                // dark gradient overlay via ::after
+                "&:after": {
+                    content: '""',
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                        "linear-gradient(180deg, rgba(12,16,14,0.78) 0%, rgba(12,16,14,0.92) 60%)",
+                },
             }}
         >
+            <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1, py: { xs: 6, md: 10 } }}>
+                {/* Hero row (flex only) */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        alignItems: { xs: "stretch", md: "center" },
+                        justifyContent: "space-between",
+                        gap: { xs: 4, md: 6 },
+                        color: "#eaf6ef",
+                    }}
+                >
+                    {/* Left: headline + ctas */}
+                    <Box sx={{ flex: "1 1 520px" }}>
+                        <Typography variant="h2" fontWeight={800} sx={{ lineHeight: 1.1 }}>
+                            Keep Dishes Going
+                        </Typography>
+                        <Typography variant="h6" sx={{ mt: 2, opacity: 0.85, maxWidth: 640 }}>
+                            Fresh, clear and reliable ordering. Owners manage menus; customers order with confidence.
+                        </Typography>
 
-            <Box
-                sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    bgcolor: "rgba(241, 248, 233, 0.75)",
-                    zIndex: 1,
-                }}
-            />
-
-            <Container maxWidth="lg" sx={{ position: "relative", zIndex: 2 }}>
-                <Box textAlign="center" mb={6}>
-                    <Typography variant="h2" component="h1" gutterBottom fontWeight={700}>
-                        Welcome to Keep Dishes Going
-                    </Typography>
-                    <Typography variant="h6" color="text.secondary" fontWeight={600}>
-                        Choose how you want to continue
-                    </Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6 }}>
-                    <Card elevation={6} sx={cardBaseStyles}>
-                        <CenteredIcon>
-                            <PersonIcon sx={{ fontSize: 60, color: "primary.main" }} />
-                        </CenteredIcon>
-                        <CardContent>
-                            <Typography variant="h5" gutterBottom>
-                                Customer
-                            </Typography>
-                            <Typography color="text.secondary">
-                                Explore restaurants and order your favorite meals.
-                            </Typography>
-                        </CardContent>
-                        <CardActions sx={{ justifyContent: "center" }}>
-                            <Button variant="contained" color="primary" size="large" component={Link} to="/customer">
-                                Continue as Customer
+                        <Box sx={{ mt: 4, display: "flex", gap: 2, flexWrap: "wrap" }}>
+                            <Button component={Link} to="/customer" variant="contained" color="primary" size="large">
+                                Explore Restaurants
                             </Button>
-                        </CardActions>
-                    </Card>
-
-                    <Card elevation={6} sx={cardBaseStyles}>
-                        <CenteredIcon>
-                            <StoreIcon sx={{ fontSize: 60, color: "secondary.main" }} />
-                        </CenteredIcon>
-                        <CardContent>
-                            <Typography variant="h5" gutterBottom>
-                                Owner
-                            </Typography>
-                            <Typography color="text.secondary">
-                                Manage your restaurant, menu and track orders.
-                            </Typography>
-                        </CardContent>
-                        <CardActions sx={{ justifyContent: "center" }}>
-                            <Button variant="contained" color="secondary" size="large" component={Link} to="/owner">
-                                Continue as Owner
+                            <Button component={Link} to="/start-owner" variant="outlined" color="inherit" size="large"
+                                    sx={{ borderColor: "rgba(255,255,255,.24)", color: "#eaf6ef" }}>
+                                I’m an Owner
                             </Button>
-                        </CardActions>
-                    </Card>
+                        </Box>
+                    </Box>
+
+                    {/* Right: two cards */}
+                    <Box
+                        sx={{
+                            flex: "0 1 520px",
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row", md: "column" },
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 3,
+                        }}
+                    >
+                        <Card elevation={8} sx={cardSx}>
+                            <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
+                                <PersonIcon sx={{ fontSize: 56, color: "primary.main" }} />
+                            </Box>
+                            <CardContent>
+                                <Typography variant="h5" fontWeight={700} gutterBottom>
+                                    Customer
+                                </Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,.75)" }}>
+                                    Explore restaurants and order your favorite meals.
+                                </Typography>
+                            </CardContent>
+                            <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+                                <Button component={Link} to="/customer" variant="contained" color="primary" size="large">
+                                    Continue
+                                </Button>
+                            </CardActions>
+                        </Card>
+
+                        <Card elevation={8} sx={cardSx}>
+                            <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
+                                <StoreIcon sx={{ fontSize: 56, color: "secondary.main" }} />
+                            </Box>
+                            <CardContent>
+                                <Typography variant="h5" fontWeight={700} gutterBottom>
+                                    Owner
+                                </Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,.75)" }}>
+                                    Create your restaurant and manage your live menu.
+                                </Typography>
+                            </CardContent>
+                            <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+                                <Button component={Link} to="/start-owner" variant="contained" color="secondary" size="large">
+                                    Start as Owner
+                                </Button>
+                            </CardActions>
+                        </Card>
+                    </Box>
                 </Box>
             </Container>
         </Box>

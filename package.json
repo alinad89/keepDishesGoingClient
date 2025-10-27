@@ -15,7 +15,10 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@mui/system": "^7.3.2",
+    "@react-keycloak/web": "^3.4.0",
     "@tanstack/react-query": "^5.90.2",
+    "axios": "^1.12.2",
+    "keycloak-js": "^26.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.2"
