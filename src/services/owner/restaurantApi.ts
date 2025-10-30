@@ -7,7 +7,7 @@ export function buildRestaurantFormData(payload: {
     email: string;
     cuisineType: string;
     prepTime: number;
-    address: { street: string; postalCode?: string; city: string; country: string };
+    address: { street: string; postalCode?: string; number: string; city: string; country: string };
     openingHours: OpeningHours;
     pictureUrls: string[]; // if you add file input later, append 'pictures'
 }) {
@@ -17,6 +17,7 @@ export function buildRestaurantFormData(payload: {
     fd.append('prepTime', String(payload.prepTime));
     fd.append('address.street', payload.address.street);
     if (payload.address.postalCode) fd.append('address.postalCode', payload.address.postalCode);
+    fd.append('address.number', payload.address.number);
     fd.append('address.city', payload.address.city);
     fd.append('address.country', payload.address.country);
     fd.append('cuisineType', payload.cuisineType);

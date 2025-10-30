@@ -1,44 +1,33 @@
 // src/pages/customer/CheckoutPage.tsx
-import { useMemo } from "react";
 import { Container, Typography, Button } from "@mui/material";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBasket } from "../../hooks/customer/useBasket";
-import BasketInfo from "../../components/basket/BasketInfo.tsx";
-import BasketLoading from "../../components/basket/BasketLoading.tsx";
-import BasketEmpty from "../../components/basket/BasketEmpty.tsx";
-import { BasketItemList } from "../../components/basket/BasketItemList.tsx";
-import { useOrder } from "../../hooks/customer/useOrder.ts"; // ✅ new hook
+import BasketInfo from "../../components/basket/BasketInfo";
+import BasketLoading from "../../components/basket/BasketLoading";
+import BasketEmpty from "../../components/basket/BasketEmpty";
+import { BasketItemList } from "../../components/basket/BasketItemList";
 
 export default function CheckoutPage() {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
     const restaurantId =
-        new URLSearchParams(window.location.search).get("restaurant") ||
+        searchParams.get("restaurant") ||
         localStorage.getItem("lastRestaurantId") ||
         "";
 
     const { basket, isBasketLoading } = useBasket();
-    const { startCheckout, isPending } = useOrder(); // ✅ from your hook
-
     const items = basket?.items ?? [];
 
-    const total = useMemo(
-        () =>
-            basket?.totalPrice ??
-            items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0),
-        [basket?.totalPrice, items]
-    );
+    const total = basket?.totalPrice ??
+        items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
 
     const isEmpty = !items.length;
 
-    // ✅ Trigger backend → Stripe checkout
-    const handleCheckout = () => {
+    const handleGoToForm = () => {
         if (!restaurantId) return;
-        startCheckout(restaurantId, {
-            onSuccess: (url) => {
-                window.location.href = url; // redirect to Stripe checkout
-            },
-            onError: () => {
-                alert("Failed to start checkout. Please try again.");
-            },
-        });
+        // ✅ navigate to form page with restaurantId in query param
+        navigate(`/customer/checkout/info?restaurant=${restaurantId}`);
     };
 
     return (
@@ -55,15 +44,14 @@ export default function CheckoutPage() {
                 <>
                     <BasketItemList items={items} totalPrice={total} />
 
-                    {/* ✅ Checkout button */}
+                    {/* ✅ This button now redirects instead of submitting */}
                     <Button
                         variant="contained"
                         color="success"
                         sx={{ mt: 3 }}
-                        onClick={handleCheckout}
-                        disabled={isPending}
+                        onClick={handleGoToForm}
                     >
-                        {isPending ? "Processing..." : "Proceed to Payment"}
+                        Proceed to Checkout
                     </Button>
                 </>
             )}

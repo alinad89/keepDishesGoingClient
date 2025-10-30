@@ -1,29 +1,12 @@
 // src/owner/OwnerDashboardPage.tsx
-import { useEffect, useState } from "react";
 import { Container, Card, CardContent, Typography, Button, Box, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
-import { getMyRestaurant } from "../../services/owner/restaurantApi.ts";
+import { useMyRestaurant } from "../../hooks/owner/useOwner.ts";
 
 export default function OwnerDashboardPage() {
-    const [restaurant, setRestaurant] = useState<any | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: restaurant, isLoading } = useMyRestaurant();
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const myRestaurant = await getMyRestaurant();
-                setRestaurant(myRestaurant);
-
-            } catch (err) {
-                console.error("Failed to fetch restaurant", err);
-                setRestaurant(null);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, []);
-
-    if (loading) {
+    if (isLoading) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                 <CircularProgress />

@@ -1,5 +1,5 @@
 import { Box, Typography, TextField, Switch, FormControlLabel, Paper, Stack, Tooltip } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type DayKey =
     | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
@@ -83,11 +83,12 @@ export default function OpeningHoursEditor({
                                                defaultOpen = "09:00",
                                                defaultClose = "17:00",
                                            }: Props) {
-    const initial: OpeningHour[] = useMemo(
-        () =>
-            DAYS.map((day) => ({ day, open: defaultOpen, close: defaultClose, closed: day === "SUNDAY" })),
-        [defaultOpen, defaultClose]
-    );
+    const initial: OpeningHour[] = DAYS.map((day) => ({
+        day,
+        open: defaultOpen,
+        close: defaultClose,
+        closed: day === "SUNDAY"
+    }));
     const [rows, setRows] = useState<OpeningHour[]>(initial);
 
     // hydrate from value
@@ -103,14 +104,18 @@ export default function OpeningHoursEditor({
         setRows(merged);
     }, [value, defaultOpen, defaultClose]);
 
-    // emit only open days
-    useEffect(() => {
-        if (!onChange) return;
-        onChange(rows.filter(r => !r.closed).map(r => ({ day: r.day, open: r.open, close: r.close })));
-    }, [rows, onChange]);
-
-    const update = (i: number, patch: Partial<OpeningHour>) =>
-        setRows(prev => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+    const update = (i: number, patch: Partial<OpeningHour>) => {
+        setRows(prev => {
+            const next = prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r));
+            // Emit only open days to parent
+            onChange?.(next.filter(r => !r.closed).map(r => ({
+                day: r.day,
+                open: r.open,
+                close: r.close
+            })));
+            return next;
+        });
+    };
 
     return (
         <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>

@@ -15,22 +15,60 @@ export async function createDish(body: DishCreateRequest) {
 }
 
 export async function editDishAsDraft(dishId: UUID, body: EditDishDraftRequest) {
-    const { data } = await axiosClient.patch<DishDto>(
-        `/dishes/${dishId}`,
-        body
-    );
-    return data;
+    try {
+        console.log(`[dishService] Saving draft for dish ${dishId}:`, body);
+        const { data } = await axiosClient.patch<DishDto>(
+            `/dishes/${dishId}`,
+            body
+        );
+        console.log(`[dishService] Draft saved successfully:`, data);
+        return data;
+    } catch (error: any) {
+        console.error(`[dishService] Failed to save draft:`, error);
+        if (error.response) {
+            console.error("Response status:", error.response.status);
+            console.error("Response data:", error.response.data);
+        }
+        throw error;
+    }
 }
 
-export async function applyAllDishDrafts() {
-    const { data } = await axiosClient.patch(`/menus/dishes/drafts`);
-    return data;
+export async function applyAllDishDrafts(): Promise<DishDto[]> {
+    try {
+        console.log("[dishService] Applying all drafts");
+        const { data } = await axiosClient.patch<DishDto[]>("/menus/dishes/drafts", {});
+        console.log("[dishService] All drafts applied successfully:", data);
+        return data;
+    } catch (error: any) {
+        console.error("[dishService] Failed to apply all drafts:", error);
+        if (error.response) {
+            console.error("Response status:", error.response.status);
+            console.error("Response data:", error.response.data);
+        }
+        throw error;
+    }
+}
+
+export async function applyDishDraft(dishId: UUID): Promise<DishDto> {
+    try {
+        console.log(`[dishService] Applying draft for dish ${dishId}`);
+        const { data } = await axiosClient.patch<DishDto>(`/menus/dishes/${dishId}/draft`, {});
+        console.log(`[dishService] Draft applied successfully:`, data);
+        return data;
+    } catch (error: any) {
+        console.error(`[dishService] Failed to apply draft:`, error);
+        if (error.response) {
+            console.error("Response status:", error.response.status);
+            console.error("Response data:", error.response.data);
+        }
+        throw error;
+    }
 }
 
 
 export async function fetchOwnerDishes(): Promise<DishDto[]> {
     const { data } = await axiosClient.get(`/dishes`);
-    return data; // includes all 3 states
+    return data;
 }
 
 export async function scheduleDish(dishId: UUID, body: ScheduleDishRequest) {

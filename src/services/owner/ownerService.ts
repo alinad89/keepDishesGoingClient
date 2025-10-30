@@ -9,18 +9,24 @@ export async function ensureOwner() {
     return data;
 }
 
-export async function setOpeningHours(openingHours: OpeningHours[]) {
-    const { data } = await axiosClient.put<RestaurantDto>(
+export async function setOpeningHours(openingHours: OpeningHours) {
+    // Convert to backend format
+    const schedule = openingHours.map(h => ({
+        dayOfWeek: h.day,
+        openTime: h.open,
+        closeTime: h.close
+    }));
+
+    await axiosClient.put<void>(
         '/owners/me/restaurant/opening-hours',
-        openingHours
+        { schedule }
     );
-    return data;
 }
 
 export async function setManualOpen(manuallyOpen: boolean) {
-    const { data } = await axiosClient.patch<RestaurantDto>(
-        '/owners/me/restaurant',
-        { manuallyOpen }
+    // Backend expects { closed: boolean }, so we invert the logic
+    await axiosClient.patch<void>(
+        '/owners/me/restaurant/manual-schedule',
+        { closed: !manuallyOpen }
     );
-    return data;
 }

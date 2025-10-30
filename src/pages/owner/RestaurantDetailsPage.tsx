@@ -1,28 +1,30 @@
-import { useEffect, useState } from "react";
-import { Box, Container, Paper, Typography, Button, Chip, CircularProgress } from "@mui/material";
+import { Box, Container, Paper, Typography, Button, Chip, CircularProgress, Alert } from "@mui/material";
 import { Link } from "react-router-dom";
-import { getMyRestaurant } from "../../services/owner/restaurantApi.ts";
-import type { RestaurantDto } from "../../types";
+import { useState } from "react";
+import { useMyRestaurant, useSetOpeningHours } from "../../hooks/owner/useOwner.ts";
+import RestaurantOpeningControl from "../../components/owner/RestaurantOpeningControl";
+import OpeningHoursEditor from "../../components/OpeningEditorComponent";
+import type { OpeningHour } from "../../components/OpeningEditorComponent";
 
 export default function RestaurantDetailsPage() {
-    const [restaurant, setRestaurant] = useState<RestaurantDto | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: restaurant, isLoading } = useMyRestaurant();
+    const setOpeningHoursMutation = useSetOpeningHours();
+    const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
+    const [successMsg, setSuccessMsg] = useState<string>("");
+    const [errorMsg, setErrorMsg] = useState<string>("");
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await getMyRestaurant(); // ✅ fetches via /services/restaurants/me
-                setRestaurant(res);
-            } catch (err) {
-                console.error("Failed to fetch restaurant", err);
-                setRestaurant(null);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, []);
+    const handleSaveOpeningHours = async () => {
+        try {
+            setErrorMsg("");
+            setSuccessMsg("");
+            await setOpeningHoursMutation.mutateAsync(openingHours);
+            setSuccessMsg("Opening hours saved successfully!");
+        } catch (error: any) {
+            setErrorMsg(error?.response?.data?.message || "Failed to save opening hours");
+        }
+    };
 
-    if (loading)
+    if (isLoading)
         return (
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                 <CircularProgress />
@@ -118,6 +120,46 @@ export default function RestaurantDetailsPage() {
                         </Box>
                     </Box>
                 </Paper>
+
+                {/* Opening Hours Schedule Editor */}
+                <Box sx={{ mt: 3 }}>
+                    {successMsg && (
+                        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMsg("")}>
+                            {successMsg}
+                        </Alert>
+                    )}
+                    {errorMsg && (
+                        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErrorMsg("")}>
+                            {errorMsg}
+                        </Alert>
+                    )}
+
+                    <OpeningHoursEditor
+                        value={openingHours}
+                        onChange={setOpeningHours}
+                        defaultOpen="09:00"
+                        defaultClose="17:00"
+                    />
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSaveOpeningHours}
+                        disabled={setOpeningHoursMutation.isPending}
+                        sx={{ mt: 2 }}
+                    >
+                        {setOpeningHoursMutation.isPending ? "Saving..." : "Save Opening Hours"}
+                    </Button>
+                </Box>
+
+                {/* Manual Opening Control */}
+                {(restaurant.id || restaurant.restaurantId) && (
+                    <RestaurantOpeningControl
+                        restaurantId={(restaurant.id || restaurant.restaurantId)!}
+                        currentlyOpen={false}
+                        manualControl={false}
+                    />
+                )}
             </Container>
         </Box>
     );

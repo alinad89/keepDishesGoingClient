@@ -13,13 +13,16 @@ import RestaurantDetailsPage from "./pages/owner/RestaurantDetailsPage";
 import CreateDishPage from "./pages/owner/CreateDishPage";
 import OwnerDishesPage from "./pages/owner/OwnerDishesPage";
 import EditDishDraftPage from "./pages/owner/EditDishDraftPage";
-
-
-
+import PendingOrdersPage from "./pages/owner/PendingOrdersPage";
+import AcceptedOrdersPage from "./pages/owner/AcceptedOrdersPage";
+import CheckoutInfoPage from "./pages/customer/CheckoutInfoPage";
 import CustomerApp from "./pages/customer/CustomerApp";
 import BrowsePage from "./pages/customer/BrowsePage";
 import RestaurantPage from "./pages/customer/RestaurantPage";
 import CheckoutPage from "./pages/customer/CheckoutPage";
+import OrderTrackingPage from "./pages/customer/OrderTrackingPage";
+import CustomerOrdersPage from "./pages/customer/CustomerOrdersPage";
+import PaymentSuccessPage from "./pages/customer/PaymentSuccessPage";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +62,8 @@ function App() {
                             <Route path="restaurants/:id/dishes/new" element={<CreateDishPage />} />
                             <Route path="dishes" element={<OwnerDishesPage />} />
                             <Route path="dishes/:dishId/edit-draft" element={<EditDishDraftPage />} />
-
+                            <Route path="orders/pending" element={<PendingOrdersPage />} />
+                            <Route path="orders/accepted" element={<AcceptedOrdersPage />} />
                         </Route>
 
                         {/* Customer area */}
@@ -67,6 +71,10 @@ function App() {
                             <Route index element={<BrowsePage />} />
                             <Route path="restaurants/:id" element={<RestaurantPage />} />
                             <Route path="checkout" element={<CheckoutPage />} />
+                            <Route path="checkout/info" element={<CheckoutInfoPage />} />
+                            <Route path="payment/success" element={<PaymentSuccessPage />} />
+                            <Route path="orders" element={<CustomerOrdersPage />} />
+                            <Route path="orders/:orderId" element={<OrderTrackingPage />} />
                         </Route>
 
                         <Route path="*" element={<Navigate to="/" replace />} />

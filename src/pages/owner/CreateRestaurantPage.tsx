@@ -3,92 +3,89 @@ import {
     Box, Container, Paper, TextField, MenuItem, Typography,
     Button, Divider, Snackbar, Alert,
 } from '@mui/material';
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
 import OpeningHoursEditor, { type OpeningHour } from '../../components/OpeningEditorComponent.tsx';
 import { useKeycloak } from "@react-keycloak/web";
-import { ensureOwner } from '../../services/owner/ownerService.ts';
-import { buildRestaurantFormData, createRestaurant } from '../../services/owner/restaurantApi.ts';
+import { useEnsureOwner, useCreateRestaurant } from '../../hooks/owner/useOwner.ts';
+import { buildRestaurantFormData } from '../../services/owner/restaurantApi.ts';
 
-const CUISINES = ['Italian','French','Japanese','Mexican','Indian','American'];
+const CUISINES = ['Italian', 'French', 'Japanese', 'Mexican', 'Indian', 'American'] as const;
+
+type RestaurantFormData = {
+    name: string;
+    street: string;
+    number: string;
+    postalCode?: string;
+    city: string;
+    country: string;
+    contactEmail: string;
+    pictureUrls: string;
+    cuisineType: string;
+    defaultPreparationMinutes: number;
+};
 
 export default function CreateRestaurantPage() {
     const nav = useNavigate();
     const { keycloak, initialized } = useKeycloak();
-    const [loading, setLoading] = useState(false);
-    const [err, setErr] = useState<string | null>(null);
     const [ok, setOk] = useState(false);
-    const [ensured, setEnsured] = useState(false);
-    const ran = useRef(false);
 
-    //todo use form
-    const [form, setForm] = useState({
-        name: '',
-        street: '', number: '',
-        postalCode: '', city: '', country: '',
-        contactEmail: '',
-        pictureUrls: '',
-        cuisineType: '',
-        defaultPreparationMinutes: 20,
+    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<RestaurantFormData>({
+        defaultValues: {
+            name: '',
+            street: '',
+            number: '',
+            postalCode: '',
+            city: '',
+            country: '',
+            contactEmail: '',
+            pictureUrls: '',
+            cuisineType: 'Italian',
+            defaultPreparationMinutes: 20,
+        },
     });
 
-    // Opening hours state
-    const [openingHours, setOpeningHours] = useState<
-        { day: OpeningHour['day']; open: string; close: string }[]
-    >([]);
+    const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
 
-    const on = (k: keyof typeof form) => (e: any) => setForm(f => ({ ...f, [k]: e.target.value }));
+    const ensureOwnerMutation = useEnsureOwner();
+    const createRestaurantMutation = useCreateRestaurant();
 
-    // Ensure Owner once using JWT (axios interceptor adds token)
+    // Ensure Owner once using JWT
     useEffect(() => {
-        if (ran.current) return;
         if (!initialized || !keycloak.authenticated || !keycloak.token) return;
+        ensureOwnerMutation.mutate();
+    }, []);
 
-        ran.current = true;
-        (async () => {
-            try {
-                await ensureOwner();
-                setEnsured(true);
-            } catch (e: any) {
-                setErr(e?.message ?? 'Ensure failed');
-            }
-        })();
-    }, [initialized, keycloak, keycloak.authenticated, keycloak.token]);
+    const onSubmit = async (data: RestaurantFormData) => {
+        const fd = buildRestaurantFormData({
+            name: data.name,
+            email: data.contactEmail,
+            cuisineType: (data.cuisineType || 'Italian').toUpperCase(),
+            prepTime: Number(data.defaultPreparationMinutes) || 20,
+            address: {
+                street: data.street,
+                number: data.number,                           // ✅ include number (required)
+                postalCode: data.postalCode || undefined,
+                city: data.city,
+                country: data.country,
+            },
+            openingHours,
+            pictureUrls: data.pictureUrls
+                ? data.pictureUrls.split(',').map(s => s.trim()).filter(Boolean)
+                : [],
+        });
 
-    const submit = async () => {
-        setErr(null);
-        if (!form.name || !form.street || !form.city || !form.country || !form.contactEmail) {
-            setErr('Please fill in the required fields.');
-            return;
-        }
-        setLoading(true);
-
-        try {
-            const fd = buildRestaurantFormData({
-                name: form.name,
-                email: form.contactEmail,
-                cuisineType: (form.cuisineType || 'Italian').toUpperCase(),
-                prepTime: Number(form.defaultPreparationMinutes) || 20,
-                address: {
-                    street: form.street + (form.number ? ` ${form.number}` : ''),
-                    postalCode: form.postalCode || undefined,
-                    city: form.city,
-                    country: form.country,
-                },
-                openingHours,
-                pictureUrls: form.pictureUrls.split(',').map(s => s.trim()).filter(Boolean),
-            });
-//todo use custom hook
-            await createRestaurant(fd); // comment this out if you don’t have the controller yet
-
-            setLoading(false);
-            setOk(true);
-            setTimeout(() => nav('/owner?refresh=true'), 900);
-        } catch (e: any) {
-            setLoading(false);
-            setErr(e?.message ?? 'Failed to create restaurant');
-        }
+        createRestaurantMutation.mutate(fd, {
+            onSuccess: () => {
+                setOk(true);
+                setTimeout(() => nav('/owner?refresh=true'), 900);
+            },
+        });
     };
+
+    const error: Error | null = (ensureOwnerMutation.error || createRestaurantMutation.error) as Error | null;
+    const ensured = ensureOwnerMutation.isSuccess;
 
     return (
         <Box sx={{ py: 6, background: 'linear-gradient(135deg, #eef7f0 0%, #ffffff 60%)' }}>
@@ -96,41 +93,188 @@ export default function CreateRestaurantPage() {
                 <Typography variant="h3" fontWeight={800} mb={3}>Create Restaurant</Typography>
 
                 <Paper sx={{ p: 3, borderRadius: 3 }} elevation={4}>
-                    {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
-                    {!ensured && <Alert severity="info" sx={{ mb: 2 }}>Preparing your owner account…</Alert>}
+                    {error && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {error.message || 'An error occurred'}
+                        </Alert>
+                    )}
+                    {!ensured && ensureOwnerMutation.isPending && (
+                        <Alert severity="info" sx={{ mb: 2 }}>Preparing your owner account…</Alert>
+                    )}
 
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                        <Box sx={{ flex: '1 1 360px', minWidth: 280 }}>
-                            <TextField label="Restaurant name" required fullWidth value={form.name} onChange={on('name')} sx={{ mb: 2 }} />
-                            <TextField label="Contact email" type="email" required fullWidth value={form.contactEmail} onChange={on('contactEmail')} sx={{ mb: 2 }} />
-                            <TextField label="Cuisine type" select fullWidth value={form.cuisineType} onChange={on('cuisineType')} sx={{ mb: 2 }}>
-                                {CUISINES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-                            </TextField>
-                            <TextField label="Default preparation (minutes)" type="number" fullWidth value={form.defaultPreparationMinutes} onChange={on('defaultPreparationMinutes')} sx={{ mb: 2 }} />
-                            <TextField label="Picture URLs (comma separated)" fullWidth value={form.pictureUrls} onChange={on('pictureUrls')} />
-                        </Box>
+                    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                            <Box sx={{ flex: '1 1 360px', minWidth: 280 }}>
+                                <Controller
+                                    name="name"
+                                    control={control}
+                                    rules={{ required: 'Restaurant name is required' }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Restaurant name"
+                                            required
+                                            fullWidth
+                                            error={!!errors.name}
+                                            helperText={errors.name?.message}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    )}
+                                />
 
-                        <Box sx={{ flex: '1 1 360px', minWidth: 280 }}>
-                            <Typography variant="h6" fontWeight={700} gutterBottom>Address</Typography>
-                            <TextField label="Street" required fullWidth value={form.street} onChange={on('street')} sx={{ mb: 2 }} />
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <TextField label="Number" fullWidth value={form.number} onChange={on('number')} />
-                                <TextField label="Postal code" fullWidth value={form.postalCode} onChange={on('postalCode')} />
+                                <Controller
+                                    name="contactEmail"
+                                    control={control}
+                                    rules={{
+                                        required: 'Contact email is required',
+                                        pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' },
+                                    }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Contact email"
+                                            type="email"
+                                            required
+                                            fullWidth
+                                            error={!!errors.contactEmail}
+                                            helperText={errors.contactEmail?.message}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="cuisineType"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField {...field} label="Cuisine type" select fullWidth sx={{ mb: 2 }}>
+                                            {CUISINES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+                                        </TextField>
+                                    )}
+                                />
+
+                                <Controller
+                                    name="defaultPreparationMinutes"
+                                    control={control}
+                                    rules={{ min: { value: 0, message: 'Must be ≥ 0' } }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Default preparation (minutes)"
+                                            type="number"
+                                            fullWidth
+                                            sx={{ mb: 2 }}
+                                            error={!!errors.defaultPreparationMinutes}
+                                            helperText={errors.defaultPreparationMinutes?.message}
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="pictureUrls"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField {...field} label="Picture URLs (comma separated)" fullWidth />
+                                    )}
+                                />
                             </Box>
-                            <Box mt={2} />
-                            <TextField label="City" required fullWidth value={form.city} onChange={on('city')} sx={{ mb: 2 }} />
-                            <TextField label="Country" required fullWidth value={form.country} onChange={on('country')} />
-                            <Box my={3}><Divider /></Box>
-                            <OpeningHoursEditor onChange={setOpeningHours} />
-                        </Box>
-                    </Box>
 
-                    <Box mt={4} display="flex" gap={2} justifyContent="flex-end">
-                        <Button variant="outlined" onClick={() => window.history.back()}>Cancel</Button>
-                        <Button variant="contained" color="primary" onClick={submit} disabled={loading || !ensured}>
-                            {loading ? 'Saving…' : 'Create Restaurant'}
-                        </Button>
-                    </Box>
+                            <Box sx={{ flex: '1 1 360px', minWidth: 280 }}>
+                                <Typography variant="h6" fontWeight={700} gutterBottom>Address</Typography>
+
+                                <Controller
+                                    name="street"
+                                    control={control}
+                                    rules={{ required: 'Street is required' }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Street"
+                                            required
+                                            fullWidth
+                                            error={!!errors.street}
+                                            helperText={errors.street?.message}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    )}
+                                />
+
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Controller
+                                        name="number"
+                                        control={control}
+                                        rules={{ required: 'Number is required' }}   // ✅ required to match AddressDto
+                                        render={({ field }) => (
+                                            <TextField
+                                                {...field}
+                                                label="Number"
+                                                required
+                                                fullWidth
+                                                error={!!errors.number}
+                                                helperText={errors.number?.message}
+                                            />
+                                        )}
+                                    />
+                                    <Controller
+                                        name="postalCode"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <TextField {...field} label="Postal code" fullWidth />
+                                        )}
+                                    />
+                                </Box>
+
+                                <Box mt={2} />
+                                <Controller
+                                    name="city"
+                                    control={control}
+                                    rules={{ required: 'City is required' }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="City"
+                                            required
+                                            fullWidth
+                                            error={!!errors.city}
+                                            helperText={errors.city?.message}
+                                            sx={{ mb: 2 }}
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="country"
+                                    control={control}
+                                    rules={{ required: 'Country is required' }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Country"
+                                            required
+                                            fullWidth
+                                            error={!!errors.country}
+                                            helperText={errors.country?.message}
+                                        />
+                                    )}
+                                />
+
+                                <Box my={3}><Divider /></Box>
+                                <OpeningHoursEditor onChange={setOpeningHours} />
+                            </Box>
+                        </Box>
+
+                        <Box mt={4} display="flex" gap={2} justifyContent="flex-end">
+                            <Button variant="outlined" onClick={() => window.history.back()}>Cancel</Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                disabled={isSubmitting || !ensured}
+                            >
+                                {isSubmitting ? 'Saving…' : 'Create Restaurant'}
+                            </Button>
+                        </Box>
+                    </form>
                 </Paper>
             </Container>
 

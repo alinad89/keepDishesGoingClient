@@ -1,149 +1,194 @@
 // src/pages/owner/EditDishDraftPage.tsx
-import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
-import { useState, useEffect } from "react";
-import {
-    TextField,
-    Button,
-    Typography,
-    Paper,
-    Stack,
-    CircularProgress,
-} from "@mui/material";
+import { Container, Typography, Button, Stack, CircularProgress, Alert } from "@mui/material";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
+import {
+    fetchOwnerDishes,
+    applyDishDraft,
+} from "../../services/owner/dishService";
+import type { DishDto, EditDishDraftRequest, DishDraft } from "../../types";
+import DishFormFields from "../../components/owner/DishFormFields";
 import { useDishDraft } from "../../hooks/owner/useDishDraft";
-import { fetchOwnerDishes } from "../../services/owner/dishService";
 
 export default function EditDishDraftPage() {
+    /** Router + libs (hooks FIRST, never behind conditionals) */
     const { dishId } = useParams<{ dishId: string }>();
-    const { updateDishDraft, applyDrafts } = useDishDraft();
     const navigate = useNavigate();
+    const qc = useQueryClient();
 
-    const [dish, setDish] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    /** UI state */
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    // ✅ Load existing dish data
+    /** Get draft hooks */
+    const { updateDishDraft } = useDishDraft();
+
+    /** Load owner dishes so we can pick the one to edit */
+    const { data: dishes, isLoading, isError } = useQuery<DishDto[]>({
+        queryKey: ["owner", "dishes"],
+        queryFn: fetchOwnerDishes,
+        staleTime: 15_000,
+    });
+
+    /** Pick the dish by id from cache/result */
+    const dish = dishes?.find((d) => d.id === dishId);
+
+    /** Current draft (if any) */
+    const draft: DishDraft | null | undefined = dish?.draft;
+
+    /** Form */
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting, errors },
+    } = useForm<EditDishDraftRequest>({
+        defaultValues: { name: "", description: "", price: 0, pictureUrl: "" },
+    });
+
+    /** Seed form when dish/draft changes */
     useEffect(() => {
-        const loadDish = async () => {
-            try {
-                const dishes = await fetchOwnerDishes();
-                const found = dishes.find((d) => d.id === dishId);
-                setDish(found);
-            } catch (err) {
-                console.error("Failed to fetch dish:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadDish();
-    }, [dishId]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setDish({ ...dish, [e.target.name]: e.target.value });
-    };
-
-    const handleSaveDraft = () => {
-        if (!dishId || !dish) return;
-        updateDishDraft.mutate(
-            { dishId, body: dish },
-            {
-                onSuccess: () => {
-                    navigate("/owner/dishes");
-                },
-                onError: () => {
-                    alert("❌ Failed to save draft. Please try again.");
-                },
-            }
-        );
-    };
-
-    const handleApplyAll = () => {
-        applyDrafts.mutate(undefined, {
-            onSuccess: () => {
-                navigate("/owner/dishes");
-            },
-            onError: () => {
-                alert("❌ Failed to apply drafts.");
-            },
+        if (!dish) return;
+        reset({
+            name: (draft?.name ?? dish.name) || "",
+            description: (draft?.description ?? dish.description) || "",
+            price:
+                typeof draft?.price === "number"
+                    ? draft.price
+                    : typeof dish.price === "number"
+                        ? dish.price
+                        : 0,
+            pictureUrl: (draft?.pictureUrl ?? dish.pictureUrl) || "",
         });
-    };
+    }, [dish, draft, reset]);
 
-    if (loading)
+    /** Apply draft (PATCH /menus/dishes/:id/draft) */
+    const applyDraftMut = useMutation({
+        mutationFn: () => applyDishDraft(dishId!),
+        onMutate: async () => setErrorMsg(null),
+        onError: (err: any) => {
+            const msg =
+                err?.response?.data?.message ||
+                err?.response?.data?.error ||
+                err?.message ||
+                "Failed to apply draft";
+            setErrorMsg(msg);
+        },
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ["owner", "dishes"] });
+            navigate("/owner/dishes");
+        },
+    });
+
+    /** Submit handler */
+    const onSubmit = handleSubmit(async (values) => {
+        if (!dish || !dishId) return;
+        setErrorMsg(null);
+
+        const body: EditDishDraftRequest = {
+            name: values.name || "",
+            description: values.description || null,
+            price: typeof values.price === "number" ? values.price : Number(values.price ?? 0),
+            pictureUrl: values.pictureUrl || null,
+            type: (draft?.type ?? dish.type) as DishDto["type"],
+            tags: (draft?.tags ?? dish.tags ?? []) as string[],
+        };
+
+        console.log("[EditDishDraftPage] Submitting draft:", body);
+
+        updateDishDraft.mutate(
+            { dishId, body },
+            {
+                onSuccess: (updatedDish) => {
+                    console.log("[EditDishDraftPage] Draft saved, response:", updatedDish);
+                    console.log("[EditDishDraftPage] Response has draft?", !!updatedDish.draft);
+                    qc.invalidateQueries({ queryKey: ["owner", "dishes"] });
+                },
+                onError: (err: any) => {
+                    console.error("[EditDishDraftPage] Save failed:", err);
+                    const msg =
+                        err?.response?.data?.message ||
+                        err?.response?.data?.error ||
+                        err?.message ||
+                        "Failed to save draft";
+                    setErrorMsg(msg);
+                },
+            }
+        );
+    });
+
+    /** Derived UI flags */
+    const saving = isSubmitting || updateDishDraft.isPending;
+    const hasDraft = Boolean(draft);
+
+    /** Render (no early returns before hooks!) */
+    if (!dishId) {
         return (
-            <Stack alignItems="center" sx={{ mt: 10 }}>
+            <Container sx={{ py: 8, textAlign: "center" }}>
+                <Typography color="error">Invalid dish ID</Typography>
+            </Container>
+        );
+    }
+
+    if (isLoading || !dishes) {
+        return (
+            <Container sx={{ py: 8, textAlign: "center" }}>
                 <CircularProgress />
-            </Stack>
+                <Typography sx={{ mt: 2 }}>Loading dish...</Typography>
+            </Container>
         );
+    }
 
-    if (!dish)
+    if (isError || !dish) {
         return (
-            <Typography sx={{ mt: 5, textAlign: "center" }}>
-                Dish not found.
-            </Typography>
+            <Container sx={{ py: 8, textAlign: "center" }}>
+                <Typography color="error">Failed to load dish.</Typography>
+            </Container>
         );
+    }
 
     return (
-        <Paper sx={{ p: 4, mt: 4, maxWidth: 600, mx: "auto" }}>
-            <Typography variant="h5" gutterBottom>
+        <Container sx={{ py: 6, maxWidth: 640 }}>
+            <Typography variant="h5" fontWeight={700} gutterBottom>
                 Edit Dish Draft
             </Typography>
 
-            <Stack spacing={2}>
-                <TextField
-                    label="Name"
-                    name="name"
-                    value={dish.name || ""}
-                    onChange={handleChange}
-                />
-                <TextField
-                    label="Description"
-                    name="description"
-                    multiline
-                    rows={3}
-                    value={dish.description || ""}
-                    onChange={handleChange}
-                />
-                <TextField
-                    label="Price (€)"
-                    name="price"
-                    type="number"
-                    value={dish.price || ""}
-                    onChange={handleChange}
-                />
-                <TextField
-                    label="Picture URL"
-                    name="pictureUrl"
-                    value={dish.pictureUrl || ""}
-                    onChange={handleChange}
-                />
+            {errorMsg && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {errorMsg}
+                </Alert>
+            )}
 
-                <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
+            <form onSubmit={onSubmit} noValidate>
+                <DishFormFields register={register} errors={errors} />
+
+                <Stack direction="row" spacing={2} mt={3} flexWrap="wrap">
+                    <Button type="submit" variant="contained" color="success" disabled={saving}>
+                        {saving ? "Saving..." : "Save Draft"}
+                    </Button>
+
                     <Button
-                        variant="contained"
+                        type="button"
+                        variant="outlined"
                         color="primary"
-                        onClick={handleSaveDraft}
-                        disabled={updateDishDraft.isPending}
+                        onClick={() => applyDraftMut.mutate()}
+                        disabled={applyDraftMut.isPending || !hasDraft}
                     >
-                        {updateDishDraft.isPending ? "Saving..." : "Save Draft"}
+                        {applyDraftMut.isPending ? "Applying..." : "Apply Draft"}
                     </Button>
 
                     <Button
+                        type="button"
                         variant="outlined"
-                        color="secondary"
-                        onClick={handleApplyAll}
-                        disabled={applyDrafts.isPending}
-                    >
-                        {applyDrafts.isPending ? "Applying..." : "Apply Draft"}
-                    </Button>
-
-                    <Button
-                        component={RouterLink}
-                        to="/owner/dishes"
-                        variant="outlined"
+                        onClick={() => navigate("/owner/dishes")}
+                        disabled={saving || applyDraftMut.isPending}
                     >
                         ← Back to Dishes
                     </Button>
                 </Stack>
-            </Stack>
-        </Paper>
+            </form>
+        </Container>
     );
 }
