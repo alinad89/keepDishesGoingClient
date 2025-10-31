@@ -5,9 +5,10 @@ import { useKeycloak } from "@react-keycloak/web";
 
 type NavbarRightCtasProps = {
     isOwner: boolean;
+    isKdg: boolean;
 };
 
-export default function NavbarRightCtas({ isOwner }: NavbarRightCtasProps) {
+export default function NavbarRightCtas({ isOwner, isKdg }: NavbarRightCtasProps) {
     const { keycloak, initialized } = useKeycloak();
     const navigate = useNavigate();
 
@@ -30,6 +31,17 @@ export default function NavbarRightCtas({ isOwner }: NavbarRightCtasProps) {
                             onClick={() => navigate("/owner")}
                         >
                             Owner Console
+                        </Button>
+                    )}
+
+                    {isKdg && (
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            endIcon={<LaunchIcon />}
+                            onClick={() => navigate("/kdg")}
+                        >
+                            KDG Admin
                         </Button>
                     )}
                 </>

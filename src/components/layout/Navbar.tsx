@@ -33,13 +33,17 @@ export default function Navbar() {
     const inCustomer =
         pathname.startsWith("/customer") || pathname.startsWith("/restaurants");
 
-    // Check if logged-in user is an owner
+    // Check if logged-in user is an owner or KDG admin
     const isOwner = Boolean(initialized && keycloak?.authenticated && keycloak.hasRealmRole("owner"));
+    const isKdg = Boolean(initialized && keycloak?.authenticated && keycloak.hasRealmRole("kdg"));
 
-    // Fetch basket only in customer area and not for owners
-    const { basket } = useBasket({ enabled: inCustomer && !isOwner });
+    // Fetch basket only in customer area and not for owners/kdg
+    const { basket } = useBasket({ enabled: inCustomer && !isOwner && !isKdg });
 
-    const count = (basket?.items ?? []).reduce((sum, it: any) => sum + (it.quantity ?? 0), 0);
+    const availableItems = basket?.availableItems ?? [];
+    const blockedItems = basket?.blockedItems ?? [];
+    const allItems = [...availableItems, ...blockedItems];
+    const count = allItems.reduce((sum, it) => sum + (it.quantity ?? 0), 0);
 
     return (
         <>
@@ -47,11 +51,11 @@ export default function Navbar() {
                 <Toolbar sx={{ minHeight: 72, px: { xs: 2, md: 3 }, gap: 2 }}>
                     <NavbarBrand />
 
-                    {!isMdDown && <NavbarDesktopNav isOwner={isOwner} />}
+                    {!isMdDown && <NavbarDesktopNav isOwner={isOwner} isKdg={isKdg} />}
 
                     <Box sx={{ flexGrow: 1 }} />
 
-                    {inCustomer && !isOwner && (
+                    {inCustomer && !isOwner && !isKdg && (
                         <IconButton
                             component={RouterLink}
                             to="/customer/checkout"
@@ -65,7 +69,7 @@ export default function Navbar() {
                         </IconButton>
                     )}
 
-                    <NavbarRightCtas isOwner={isOwner} />
+                    <NavbarRightCtas isOwner={isOwner} isKdg={isKdg} />
                 </Toolbar>
             </GlassAppBar>
 

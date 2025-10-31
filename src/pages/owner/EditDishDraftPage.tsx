@@ -21,6 +21,7 @@ export default function EditDishDraftPage() {
 
     /** UI state */
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
     /** Get draft hooks */
     const { updateDishDraft } = useDishDraft();
@@ -67,7 +68,10 @@ export default function EditDishDraftPage() {
     /** Apply draft (PATCH /menus/dishes/:id/draft) */
     const applyDraftMut = useMutation({
         mutationFn: () => applyDishDraft(dishId!),
-        onMutate: async () => setErrorMsg(null),
+        onMutate: async () => {
+            setErrorMsg(null);
+            setSuccessMsg(null);
+        },
         onError: (err: any) => {
             const msg =
                 err?.response?.data?.message ||
@@ -76,9 +80,12 @@ export default function EditDishDraftPage() {
                 "Failed to apply draft";
             setErrorMsg(msg);
         },
-        onSuccess: async () => {
+        onSuccess: async (updatedDish) => {
+            console.log("[EditDishDraftPage] Draft applied successfully:", updatedDish);
             await qc.invalidateQueries({ queryKey: ["owner", "dishes"] });
-            navigate("/owner/dishes");
+            await qc.refetchQueries({ queryKey: ["owner", "dishes"] });
+            setSuccessMsg("Draft applied successfully! Redirecting...");
+            setTimeout(() => navigate("/owner/dishes"), 1500);
         },
     });
 
@@ -86,6 +93,7 @@ export default function EditDishDraftPage() {
     const onSubmit = handleSubmit(async (values) => {
         if (!dish || !dishId) return;
         setErrorMsg(null);
+        setSuccessMsg(null);
 
         const body: EditDishDraftRequest = {
             name: values.name || "",
@@ -101,10 +109,16 @@ export default function EditDishDraftPage() {
         updateDishDraft.mutate(
             { dishId, body },
             {
-                onSuccess: (updatedDish) => {
+                onSuccess: async (updatedDish) => {
                     console.log("[EditDishDraftPage] Draft saved, response:", updatedDish);
                     console.log("[EditDishDraftPage] Response has draft?", !!updatedDish.draft);
-                    qc.invalidateQueries({ queryKey: ["owner", "dishes"] });
+
+                    // Invalidate and refetch to get the latest data
+                    await qc.invalidateQueries({ queryKey: ["owner", "dishes"] });
+                    await qc.refetchQueries({ queryKey: ["owner", "dishes"] });
+
+                    setSuccessMsg("Draft saved successfully!");
+                    setTimeout(() => setSuccessMsg(null), 3000);
                 },
                 onError: (err: any) => {
                     console.error("[EditDishDraftPage] Save failed:", err);
@@ -158,6 +172,12 @@ export default function EditDishDraftPage() {
             {errorMsg && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {errorMsg}
+                </Alert>
+            )}
+
+            {successMsg && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    {successMsg}
                 </Alert>
             )}
 

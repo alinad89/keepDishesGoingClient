@@ -23,6 +23,11 @@ import CheckoutPage from "./pages/customer/CheckoutPage";
 import OrderTrackingPage from "./pages/customer/OrderTrackingPage";
 import CustomerOrdersPage from "./pages/customer/CustomerOrdersPage";
 import PaymentSuccessPage from "./pages/customer/PaymentSuccessPage";
+import KdgAuthLanding from "./pages/kdg/KdgAuthLanding";
+import KdgRoute from "./pages/kdg/KdgRoute";
+import KdgDashboardPage from "./pages/kdg/KdgDashboardPage";
+import PriceBandsPage from "./pages/kdg/PriceBandsPage";
+import PriceEvolutionPage from "./pages/kdg/PriceEvolutionPage";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +59,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/start-owner" element={<AuthLanding />} />
+                        <Route path="/start-kdg" element={<KdgAuthLanding />} />
 
                         <Route path="/owner" element={<OwnerRoute />}>
                             <Route index element={<OwnerDashboardPage />} />
@@ -64,6 +70,13 @@ function App() {
                             <Route path="dishes/:dishId/edit-draft" element={<EditDishDraftPage />} />
                             <Route path="orders/pending" element={<PendingOrdersPage />} />
                             <Route path="orders/accepted" element={<AcceptedOrdersPage />} />
+                        </Route>
+
+                        {/* KDG Admin area */}
+                        <Route path="/kdg" element={<KdgRoute />}>
+                            <Route index element={<KdgDashboardPage />} />
+                            <Route path="price-bands" element={<PriceBandsPage />} />
+                            <Route path="price-evolution" element={<PriceEvolutionPage />} />
                         </Route>
 
                         {/* Customer area */}

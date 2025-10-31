@@ -1,7 +1,8 @@
 // src/pages/customer/RestaurantPage.tsx
 import { useEffect } from 'react';
 import {useParams, useSearchParams } from 'react-router-dom';
-import { Container, Typography, Alert } from '@mui/material';
+import { Container, Typography, Box, Chip } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useBasket } from '../../hooks/customer/useBasket';
 import DishFilters from '../../components/restaurant/DishFilters.tsx';
 import DishGrid from '../../components/restaurant/DishGrid.tsx';
@@ -10,6 +11,7 @@ import { DISH_TYPES} from '../../types';
 import useCustomerDishes from "../../hooks/customer/useCustomerDishes.ts";
 import {useAnonymCustomer} from "../../hooks/customer/useAnonymCustomer.ts";
 import {useAddItemToBasket} from "../../hooks/customer/useAddItem.ts";
+import { useRestaurantWithEta } from "../../hooks/customer/useRestaurantWithEta.ts";
 
 
 export default function RestaurantPage() {
@@ -18,18 +20,20 @@ export default function RestaurantPage() {
     const [params, setParams] = useSearchParams();
     const type = (params.get('type') || '') as ('' | typeof DISH_TYPES[number]);
     const tag = params.get('tag') || '';
+    const sortBy = params.get('sortBy') || '';
 
     const { basket, isBasketLoading, add } = useBasket();
-    const { data, isError, isLoading } = useCustomerDishes(id, { type, tag });
+    const { data, isError, isLoading } = useCustomerDishes(id, { type, tag, sortBy });
     const { createAnonCustomer } = useAnonymCustomer();
     const { addItem } = useAddItemToBasket();
+    const { restaurantWithEta } = useRestaurantWithEta(id);
 
     useEffect(() => {
         createAnonCustomer();
     }, [createAnonCustomer]);
 
 
-    const setParam = (key: 'type' | 'tag', value: string) => {
+    const setParam = (key: 'type' | 'tag' | 'sortBy', value: string) => {
         const next = new URLSearchParams(params);
         if (value) next.set(key, value);
         else next.delete(key);
@@ -55,15 +59,27 @@ export default function RestaurantPage() {
 
     return (
         <Container sx={{ py: 3 }}>
-            <Typography variant="h4" gutterBottom>Menu</Typography>
+            <Box sx={{ mb: 3 }}>
+                {restaurantWithEta?.restaurant && (
+                    <Typography variant="h4" gutterBottom>
+                        {restaurantWithEta.restaurant.name}
+                    </Typography>
+                )}
+                {!restaurantWithEta?.restaurant && (
+                    <Typography variant="h4" gutterBottom>Menu</Typography>
+                )}
 
-            <DishFilters type={type} tag={tag} onChange={setParam} />
+                {restaurantWithEta?.etaMinutes && (
+                    <Chip
+                        icon={<AccessTimeIcon />}
+                        label={`Estimated delivery: ${restaurantWithEta.etaMinutes} min`}
+                        color="primary"
+                        sx={{ mt: 1 }}
+                    />
+                )}
+            </Box>
 
-            {isBasketLoading && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                    Preparing your basket…
-                </Alert>
-            )}
+            <DishFilters type={type} tag={tag} sortBy={sortBy} onChange={setParam} />
 
             <DishGrid
                 loading={isLoading}
@@ -72,7 +88,7 @@ export default function RestaurantPage() {
                 addDisabled={add.isPending || isBasketLoading}
             />
 
-            <BasketStatus basketId={basket?.id} />
+            <BasketStatus restaurantId={basket?.restaurantId} isBlocked={basket?.blocked} />
         </Container>
     );
 }

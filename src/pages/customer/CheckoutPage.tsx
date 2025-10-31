@@ -17,15 +17,16 @@ export default function CheckoutPage() {
         "";
 
     const { basket, isBasketLoading } = useBasket();
-    const items = basket?.items ?? [];
+    const availableItems = basket?.availableItems ?? [];
+    const blockedItems = basket?.blockedItems ?? [];
+    const total = basket?.totalPrice ?? 0;
+    const isBlocked = basket?.blocked ?? false;
 
-    const total = basket?.totalPrice ??
-        items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
-
-    const isEmpty = !items.length;
+    const isEmpty = availableItems.length === 0 && blockedItems.length === 0;
 
     const handleGoToForm = () => {
         if (!restaurantId) return;
+        if (isBlocked) return; // Prevent checkout if basket is blocked
         // ✅ navigate to form page with restaurantId in query param
         navigate(`/customer/checkout/info?restaurant=${restaurantId}`);
     };
@@ -42,16 +43,21 @@ export default function CheckoutPage() {
 
             {!isBasketLoading && !isEmpty && (
                 <>
-                    <BasketItemList items={items} totalPrice={total} />
+                    <BasketItemList
+                        availableItems={availableItems}
+                        blockedItems={blockedItems}
+                        totalPrice={total}
+                    />
 
                     {/* ✅ This button now redirects instead of submitting */}
                     <Button
                         variant="contained"
-                        color="success"
+                        color={isBlocked ? "error" : "success"}
                         sx={{ mt: 3 }}
                         onClick={handleGoToForm}
+                        disabled={isBlocked || availableItems.length === 0}
                     >
-                        Proceed to Checkout
+                        {isBlocked ? "Cannot Checkout - Items Unavailable" : "Proceed to Checkout"}
                     </Button>
                 </>
             )}

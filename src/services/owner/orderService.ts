@@ -15,11 +15,14 @@ function normalizeIncomingOrder(raw: any): IncomingOrderResponse {
 
 export async function fetchPendingOrders(): Promise<IncomingOrderResponse[]> {
     try {
+        console.log("[orderService] Fetching pending orders");
         const { data } = await axiosClient.get<any[]>(
             `/restaurants/owners/me/incoming-orders?status=SUBMITTED`
         );
 
+        console.log("[orderService] PENDING orders raw:", data);
         const normalized = data.map(normalizeIncomingOrder);
+        console.log("[orderService] PENDING orders normalized:", normalized);
         return normalized;
     } catch (error: any) {
         console.error("[orderService] Failed to fetch pending orders:", error);
@@ -53,14 +56,26 @@ export async function fetchAcceptedOrders(): Promise<IncomingOrderResponse[]> {
 
 export async function acceptOrder(restaurantId: UUID, orderId: UUID) {
     try {
+        console.log(`[orderService] ===== ACCEPT ORDER STARTED =====`);
+        console.log(`[orderService] Restaurant ID:`, restaurantId);
+        console.log(`[orderService] Order ID:`, orderId);
+
         const request: OrderStatusChangeRequest = { action: "ACCEPT" };
-        const { data } = await axiosClient.patch(
-            `/restaurants/${restaurantId}/orders/${orderId}`,
-            request
-        );
+        console.log(`[orderService] Request payload:`, request);
+
+        const url = `/restaurants/${restaurantId}/orders/${orderId}`;
+        console.log(`[orderService] Request URL:`, url);
+
+        const { data } = await axiosClient.patch(url, request);
+
+        console.log(`[orderService] Accept order SUCCESS:`, data);
+        console.log(`[orderService] ===== ACCEPT ORDER COMPLETED =====`);
         return data;
     } catch (error: any) {
-        console.error(`[orderService] Failed to accept order:`, error);
+        console.error(`[orderService] ===== ACCEPT ORDER FAILED =====`);
+        console.error(`[orderService] Error object:`, error);
+        console.error(`[orderService] Restaurant ID:`, restaurantId);
+        console.error(`[orderService] Order ID:`, orderId);
         if (error.response) {
             console.error("Response status:", error.response.status);
             console.error("Response data:", error.response.data);

@@ -34,13 +34,19 @@ export default function PendingOrdersPage() {
     const [declineReason, setDeclineReason] = useState<string>("");
 
     const handleAccept = (orderId: string, restaurantId: string) => {
+        console.log(`[PendingOrdersPage] ===== HANDLE ACCEPT CALLED =====`);
+        console.log(`[PendingOrdersPage] Order ID:`, orderId);
+        console.log(`[PendingOrdersPage] Restaurant ID:`, restaurantId);
+
         acceptMutation.mutate(
             { restaurantId, orderId },
             {
                 onSuccess: () => {
+                    console.log(`[PendingOrdersPage] Accept SUCCESS for order:`, orderId);
                     setSuccessMessage(`Order #${orderId.slice(0, 8)} accepted successfully!`);
                 },
                 onError: (error: any) => {
+                    console.error(`[PendingOrdersPage] Accept ERROR for order:`, orderId, error);
                     const backendError = error?.response?.data?.message ||
                                         error?.response?.data?.error ||
                                         error?.message ||

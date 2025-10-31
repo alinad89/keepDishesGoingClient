@@ -20,16 +20,17 @@ const NavLinkStyled = styled(NavLink)(({ theme }) => ({
 
 type NavbarDesktopNavProps = {
     isOwner: boolean;
+    isKdg: boolean;
 };
 
-export default function NavbarDesktopNav({ isOwner }: NavbarDesktopNavProps) {
+export default function NavbarDesktopNav({ isOwner, isKdg }: NavbarDesktopNavProps) {
     const { pathname } = useLocation();
     const inCustomer = pathname.startsWith("/customer") || pathname.startsWith("/restaurants");
 
     return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mx: 2 }}>
             <NavLinkStyled to="/" end>Home</NavLinkStyled>
-            {inCustomer && !isOwner && (
+            {inCustomer && !isOwner && !isKdg && (
                 <>
                     <NavLinkStyled to="/customer">Restaurants</NavLinkStyled>
                     <NavLinkStyled to="/customer/orders">My Orders</NavLinkStyled>
@@ -39,6 +40,12 @@ export default function NavbarDesktopNav({ isOwner }: NavbarDesktopNavProps) {
                 <>
                     <NavLinkStyled to="/owner/orders/pending">Pending Orders</NavLinkStyled>
                     <NavLinkStyled to="/owner/orders/accepted">Preparing Orders</NavLinkStyled>
+                </>
+            )}
+            {isKdg && (
+                <>
+                    <NavLinkStyled to="/kdg/price-bands">Price Bands</NavLinkStyled>
+                    <NavLinkStyled to="/kdg/price-evolution">Price Evolution</NavLinkStyled>
                 </>
             )}
             <NavLinkStyled to="/about">Process</NavLinkStyled>

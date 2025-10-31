@@ -17,12 +17,12 @@ export function useBasket(opts?: { enabled?: boolean }) {
 // src/hooks/customer/useBasket.ts
     const add = useMutation({
         mutationFn: (payload: AddItemToBasket) => {
-            const id = basketQ.data?.id;
-            if (!id) throw new Error('Basket not ready');
-            return addItemToBasket(id, payload);
+            const restaurantId = basketQ.data?.restaurantId;
+            if (!restaurantId) throw new Error('Basket not ready');
+            return addItemToBasket(restaurantId, payload);
         },
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: ['basket', 'current'] }); // <- refetch real basket
+            qc.invalidateQueries({ queryKey: ['basket', 'current'] });
         },
     });
 

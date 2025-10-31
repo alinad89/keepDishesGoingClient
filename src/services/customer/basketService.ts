@@ -7,8 +7,6 @@ export async function getCurrentBasket(): Promise<BasketDto> {
     return data;
 }
 
-
-
 export async function addItemToBasket(basketId: string, item: AddItemToBasket): Promise<BasketDto> {
     const { data } = await axiosClient.patch<BasketDto>(`/baskets/${basketId}/items`, item);
     return data;

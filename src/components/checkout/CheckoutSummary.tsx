@@ -3,16 +3,19 @@ import { Paper, Stack } from "@mui/material";
 import type { CustomerInfo } from "./CustomerInfoForm.tsx"
 import BasketSection from "./BasketSection";
 import {CustomerInfoForm} from "./index.ts";
+import type { BasketItem } from "../../types/basket";
 
 type Props = {
-    items: any[];
+    availableItems: BasketItem[];
+    blockedItems?: BasketItem[];
     totalPrice: number;
     onCheckout: (data: CustomerInfo) => void;
     disabled?: boolean;
 };
 
 export default function CheckoutSummary({
-                                            items,
+                                            availableItems,
+                                            blockedItems = [],
                                             totalPrice,
                                             onCheckout,
                                             disabled,
@@ -21,7 +24,11 @@ export default function CheckoutSummary({
         <Paper sx={{ p: 4 }}>
             <Stack spacing={4}>
                 <CustomerInfoForm onSubmit={onCheckout} disabled={disabled} />
-                <BasketSection items={items} totalPrice={totalPrice} />
+                <BasketSection
+                    availableItems={availableItems}
+                    blockedItems={blockedItems}
+                    totalPrice={totalPrice}
+                />
             </Stack>
         </Paper>
     );

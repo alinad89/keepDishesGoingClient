@@ -1,7 +1,11 @@
 import axiosClient from "../../lib/axiosClient";
 import type { DishDto } from "../../types";
 
-export type CustomerDishFilters = { type?: string; tag?: string };
+export type CustomerDishFilters = {
+    type?: string;
+    tag?: string;
+    sortBy?: string;
+};
 
 export async function fetchCustomerDishes(
     restaurantId: string,

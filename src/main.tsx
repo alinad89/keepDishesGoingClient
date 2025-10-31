@@ -13,6 +13,14 @@ createRoot(document.getElementById('root')!).render(
             pkceMethod: 'S256',
             checkLoginIframe: false,
         }}
+        autoRefreshToken={true}
+        onTokens={(tokens) => {
+            // Automatically refresh token when it's about to expire
+            if (tokens.token) {
+                // Token will be refreshed automatically by the library
+                console.log('Token refreshed');
+            }
+        }}
     >
         <App/>
     </ReactKeycloakProvider>

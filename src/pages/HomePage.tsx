@@ -3,6 +3,7 @@ import { Box, Container, Typography, Button, Card, CardContent, CardActions } fr
 import { Link } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
 import StoreIcon from "@mui/icons-material/Store";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 const cardSx = {
     width: 340,
@@ -117,6 +118,25 @@ export default function HomeLanding() {
                             <CardActions sx={{ justifyContent: "center", pb: 2 }}>
                                 <Button component={Link} to="/start-owner" variant="contained" color="secondary" size="large">
                                     Start as Owner
+                                </Button>
+                            </CardActions>
+                        </Card>
+
+                        <Card elevation={8} sx={cardSx}>
+                            <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
+                                <AdminPanelSettingsIcon sx={{ fontSize: 56, color: "warning.main" }} />
+                            </Box>
+                            <CardContent>
+                                <Typography variant="h5" fontWeight={700} gutterBottom>
+                                    KDG Admin
+                                </Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,.75)" }}>
+                                    Manage price bands and view restaurant analytics.
+                                </Typography>
+                            </CardContent>
+                            <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+                                <Button component={Link} to="/start-kdg" variant="contained" color="warning" size="large">
+                                    Admin Console
                                 </Button>
                             </CardActions>
                         </Card>
