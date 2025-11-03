@@ -22,3 +22,21 @@ export default function DishCard({ dish, onAdd, disabled }: Props) {
         </Paper>
     );
 }
+
+
+//t handleAddToBasket = () => {
+//           add.mutate({
+//               dishId: dish.id,
+//               quantity: 1
+//           });
+//       };
+//
+//       return (
+//           <button
+//               onClick={handleAddToBasket}
+//               disabled={add.isPending}  // ← Disable while loading
+//           >
+//               {add.isPending ? 'Adding...' : 'Add to Basket'}
+//           </button>
+//       );
+//   }

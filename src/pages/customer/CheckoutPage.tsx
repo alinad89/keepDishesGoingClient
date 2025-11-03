@@ -27,7 +27,6 @@ export default function CheckoutPage() {
     const handleGoToForm = () => {
         if (!restaurantId) return;
         if (isBlocked) return; // Prevent checkout if basket is blocked
-        // ✅ navigate to form page with restaurantId in query param
         navigate(`/customer/checkout/info?restaurant=${restaurantId}`);
     };
 
