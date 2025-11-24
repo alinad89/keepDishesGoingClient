@@ -1,0 +1,144 @@
+/* ----- LIGHT THEME (default) ----- */
+:root {
+    --bg-color: #C1D4FF;        /* darker light blue background */
+    --card-bg: #D6E3FF;         /* slightly lighter than bg, still blue */
+    --card-border: #96B0F0;     /* mid-blue border for separation */
+
+    --text-color: #05132E;      /* very dark navy-blue for max contrast */
+    --muted-text: #304067;      /* softer blue-gray for secondary text */
+
+    --accent: #194FCC;          /* deeper blue accent for buttons/links */
+    --hover-accent: #123A96;    /* darker hover for clear feedback */
+
+    /* Gaming enhancements - gradients and glows */
+    --accent-glow: rgba(25, 79, 204, 0.4);
+    --accent-gradient-start: #194FCC;
+    --accent-gradient-end: #2E5FDD;
+    --card-glow: rgba(150, 176, 240, 0.2);
+    --shadow-color: rgba(5, 19, 46, 0.15);
+}
+
+/* ----- DARK THEME ----- */
+:root[data-theme='dark'] {
+    --bg-color: #3C0729;        /* a bit deeper, more burgundy */
+    --card-bg: #7C0F33;         /* darker card background */
+    --card-border: #9E1A43;     /* slightly deeper border */
+
+    /* brighter, more readable text */
+    --text-color: #FFF6EF;      /* warm almost-white */
+    --muted-text: #F9B893;      /* soft peach for secondary text */
+
+    /* warm orange accents, slightly darker */
+    --accent: #E05C1A;          /* darker primary orange accent */
+    --hover-accent: #B64811;    /* deeper orange on hover */
+
+    /* Gaming enhancements - gradients and glows (warm, darker) */
+    --accent-gradient-start: #E05C1A;   /* darker start */
+    --accent-gradient-end: #F39A2D;     /* deeper gold */
+    --accent-glow: rgba(176, 72, 17, 0.45); /* darker + a bit softer */
+    --card-glow: rgba(215, 132, 90, 0.16);
+    --shadow-color: rgba(0, 0, 0, 0.6);
+
+    /* Text glow, slightly toned down */
+    --text-glow-soft: 0 0 6px rgba(255, 210, 180, 0.16);
+    --text-glow-strong: 0 0 10px rgba(255, 210, 180, 0.3);
+}
+:root {
+    /* Clip-path shape variables */
+
+    /* Hexagon button shape - sharp corners for interactive elements */
+    --clip-shape-button: polygon(7% 0%, 92% 0%, 100% 50%, 92% 100%, 7% 100%, 0% 50%);
+
+    /* Hexagon card shape - softer corners for content cards */
+    --clip-shape-card: polygon(
+            3% 0%,
+            97% 0%,
+            100% 50%,
+            97% 100%,
+            3% 100%,
+            0% 50%
+    );
+    /* Angled corner shapes - bottom-left angle cut */
+    --clip-shape-navbar: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    --clip-shape-info-box: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    --clip-shape-input: polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+    --clip-shape-badge: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    --clip-shape-cta: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+/* Global styles using the variables */
+body {
+    margin: 0;
+    display: block;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 100;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Apply ultra light to all elements by default */
+* {
+    font-weight: 100;
+}
+
+/* Slightly heavier weights for specific elements for readability */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 200;
+}
+
+strong, b {
+    font-weight: 300;
+}
+
+/* Subtle hexagon background pattern */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        repeating-linear-gradient(
+            30deg,
+            transparent,
+            transparent 50px,
+            var(--text-color) 50px,
+            var(--text-color) 51px
+        ),
+        repeating-linear-gradient(
+            -30deg,
+            transparent,
+            transparent 50px,
+            var(--text-color) 50px,
+            var(--text-color) 51px
+        );
+}
+
+/* App layout */
+.app {
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    position: relative;
+    z-index: 1;
+}
+
+.main-container {
+    max-width: 95%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 1rem;
+    }
+}

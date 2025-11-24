@@ -1,0 +1,35 @@
+.action-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-group-row {
+  flex-direction: row;
+}
+
+.action-group-column {
+  flex-direction: column;
+}
+
+.action-group-left {
+  justify-content: flex-start;
+}
+
+.action-group-center {
+  justify-content: center;
+}
+
+.action-group-right {
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .action-group {
+    flex-direction: column;
+  }
+
+  .action-group button {
+    width: 100%;
+  }
+}

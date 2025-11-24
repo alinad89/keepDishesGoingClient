@@ -1,0 +1,35 @@
+.info-box {
+  background: linear-gradient(135deg, var(--card-bg), var(--bg-color));
+  padding: 2.5rem;
+  box-shadow: 0 8px 25px var(--shadow-color);
+  position: relative;
+  clip-path: var(--clip-shape-info-box);
+}
+
+.info-box-accent {
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+
+.info-box-title {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-color);
+  font-size: 1.8rem;
+  font-weight: 200;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.info-box-content {
+  color: var(--muted-text);
+}
+
+.info-box-content ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.info-box-content li {
+  margin-bottom: 0.5rem;
+}

@@ -1,0 +1,19 @@
+.filter-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-active {
+  background: linear-gradient(135deg, var(--accent), var(--primary)) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px var(--accent-glow) !important;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+  }
+}

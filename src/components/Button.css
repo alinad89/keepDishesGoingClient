@@ -1,0 +1,155 @@
+.btn {
+    border: none;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    font-weight: 200;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    clip-path: var(--clip-shape-button);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+            45deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.2) 50%,
+            transparent 70%
+    );
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+    opacity: 0;
+}
+
+.btn:hover::before {
+    opacity: 1;
+    animation: shimmer 1.5s infinite;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* no border here, just keep the shape for potential effects */
+    clip-path: var(--clip-shape-button);
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(
+            135deg,
+            var(--accent-gradient-start),
+            var(--accent-gradient-end)
+    );
+    color: white;
+    box-shadow: 0 6px 20px var(--accent-glow);
+    border: none;
+}
+
+.btn-primary::after {
+    /* removed border; keep for future visual tweaks if needed */
+    opacity: 0;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 30px var(--accent-glow);
+}
+
+.btn-primary:hover::after {
+    opacity: 1;
+}
+
+.btn-primary:active {
+    transform: translateY(-1px) scale(1);
+}
+
+.btn-secondary {
+    background: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 4px 15px var(--card-glow);
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, var(--card-bg), var(--bg-color));
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px var(--card-glow);
+}
+
+.btn-secondary:active {
+    transform: translateY(-1px) scale(1);
+}
+
+.btn-small {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+    background: linear-gradient(
+            135deg,
+            var(--accent-gradient-start),
+            var(--accent-gradient-end)
+    );
+    color: white;
+    box-shadow: 0 4px 12px var(--accent-glow);
+    clip-path: var(--clip-shape-button);
+    border: none;
+}
+
+.btn-small::after {
+    clip-path: var(--clip-shape-button);
+}
+
+.btn-small:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-small:active {
+    transform: translateY(-1px) scale(1);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+.btn-outline::after {
+    /* no border, just keep shape for potential glow/effects */
+    opacity: 0;
+}
+
+.btn-outline:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.btn-outline:hover::after {
+    opacity: 1;
+}
+
+.btn-outline:active {
+    transform: translateY(-1px) scale(1);
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
