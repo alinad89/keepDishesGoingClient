@@ -1,0 +1,5 @@
+{
+  "/games/:id/achievements": "/achievements?gameId=:id",
+  "/games/:gameId/achievements/:achId": "/achievements/:achId",
+  "/chats/:id": "/chats/:id"
+}
