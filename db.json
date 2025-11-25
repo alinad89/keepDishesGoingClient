@@ -1,0 +1,172 @@
+{
+  "games": [
+    {
+      "id": "game-001",
+      "key": "space-warriors",
+      "name": "Space Warriors",
+      "description": "An epic space strategy game where you command fleets across the galaxy. Build your empire, form alliances, and conquer the stars in this multiplayer masterpiece.",
+      "thumbnailUrl": "https://picsum.photos/300/200?random=1",
+      "coverImageUrl": "https://picsum.photos/1920/1080?random=1",
+      "rules": "Players take turns commanding their fleets. Victory is achieved by controlling 3 star systems or eliminating all opponents. Use strategy cards to gain advantages.",
+      "shortDescription": "Command fleets and conquer the galaxy in this epic space strategy game",
+      "tags": [
+        "STRATEGY",
+        "MULTIPLAYER",
+        "SCI_FI",
+        "COMPETITIVE"
+      ],
+      "version": "2.1.0",
+      "url": "https://example.com/space-warriors"
+    },
+    {
+      "id": "game-002",
+      "key": "puzzle-master",
+      "name": "Puzzle Master",
+      "description": "Challenge your mind with hundreds of unique puzzles. From simple brain teasers to complex logic problems, Puzzle Master has something for everyone.",
+      "thumbnailUrl": "https://picsum.photos/300/200?random=2",
+      "coverImageUrl": "https://picsum.photos/1920/1080?random=2",
+      "rules": "Complete puzzles by arranging pieces correctly. Earn stars based on completion time. Unlock harder puzzles as you progress.",
+      "shortDescription": "Test your mind with hundreds of challenging puzzles",
+      "tags": [
+        "PUZZLE",
+        "SINGLEPLAYER",
+        "CASUAL",
+        "BRAIN_TEASER"
+      ],
+      "version": "1.5.2",
+      "url": "https://example.com/puzzle-master"
+    },
+    {
+      "id": "game-003",
+      "key": "fantasy-quest",
+      "name": "Fantasy Quest",
+      "description": "Embark on an epic adventure through mystical lands. Battle monsters, discover ancient treasures, and become the hero of legend in this story-rich RPG.",
+      "thumbnailUrl": "https://picsum.photos/300/200?random=3",
+      "coverImageUrl": "https://picsum.photos/1920/1080?random=3",
+      "rules": "Create your character and explore the world. Complete quests, level up, and make choices that affect the story outcome.",
+      "shortDescription": "Epic RPG adventure through mystical fantasy lands",
+      "tags": [
+        "RPG",
+        "ADVENTURE",
+        "FANTASY",
+        "STORY_RICH",
+        "SINGLEPLAYER"
+      ],
+      "version": "3.0.1",
+      "url": "https://example.com/fantasy-quest"
+    },
+    {
+      "id": "game-test",
+      "key": "test-game",
+      "name": "Test Game",
+      "description": "A test game",
+      "thumbnailUrl": "https://picsum.photos/300/200",
+      "coverImageUrl": "https://picsum.photos/1920/1080",
+      "rules": "Test rules",
+      "shortDescription": "Test description",
+      "tags": [
+        "PUZZLE",
+        "CASUAL"
+      ],
+      "version": "1.0.0",
+      "url": "https://example.com/test-game"
+    },
+    {
+      "id": "game-mic08fg9",
+      "key": "123",
+      "name": "qwe",
+      "description": "qwe",
+      "thumbnailUrl": "https://picsum.photos/300/200?random=1763919679545",
+      "coverImageUrl": "https://picsum.photos/1920/1080?random=1763919679545",
+      "rules": "qwe",
+      "shortDescription": "qwe",
+      "tags": [
+        "ADVENTURE"
+      ],
+      "version": "1.0.0",
+      "url": "https://example.com/123"
+    },
+    {
+      "id": "game-mic2nyiz",
+      "key": "12",
+      "name": "qwe",
+      "description": "qwe",
+      "thumbnailUrl": "https://picsum.photos/300/200?random=1763923763339",
+      "coverImageUrl": "https://picsum.photos/1920/1080?random=1763923763339",
+      "rules": "qwe",
+      "shortDescription": "qwe",
+      "tags": [
+        "PROCEDURAL"
+      ],
+      "version": "1.0.0",
+      "url": "https://example.com/12"
+    }
+  ],
+  "achievements": [
+    {
+      "id": "ach-001",
+      "gameId": "game-001",
+      "name": "First Victory",
+      "iconUrl": "https://api.dicebear.com/7.x/shapes/svg?seed=victory",
+      "instructions": "Win your first battle"
+    },
+    {
+      "id": "ach-002",
+      "gameId": "game-001",
+      "name": "Fleet Commander",
+      "iconUrl": "https://api.dicebear.com/7.x/shapes/svg?seed=commander",
+      "instructions": "Control a fleet of 10 ships"
+    },
+    {
+      "id": "ach-003",
+      "gameId": "game-002",
+      "name": "Puzzle Novice",
+      "iconUrl": "https://api.dicebear.com/7.x/shapes/svg?seed=novice",
+      "instructions": "Complete 10 puzzles"
+    },
+    {
+      "id": "ach-004",
+      "gameId": "game-002",
+      "name": "Master Mind",
+      "iconUrl": "https://api.dicebear.com/7.x/shapes/svg?seed=master",
+      "instructions": "Complete all expert puzzles"
+    },
+    {
+      "id": "ach-005",
+      "gameId": "game-003",
+      "name": "Dragon Slayer",
+      "iconUrl": "https://api.dicebear.com/7.x/shapes/svg?seed=dragon",
+      "instructions": "Defeat the ancient dragon"
+    }
+  ],
+  "chats": [
+    {
+      "id": "chat-001",
+      "chatName": "Getting Started",
+      "messages": [
+        {
+          "aiMessage": false,
+          "content": "How do I create a new game?"
+        },
+        {
+          "aiMessage": true,
+          "content": "To create a new game, navigate to the Developer Dashboard and click 'Add a New Game'. You'll need to provide game details, upload assets, and configure settings."
+        }
+      ]
+    },
+    {
+      "id": "chat-002",
+      "chatName": "Platform Features",
+      "messages": [
+        {
+          "aiMessage": false,
+          "content": "What features does the Hexagon platform offer?"
+        },
+        {
+          "aiMessage": true,
+          "content": "Hexagon offers game hosting, achievement systems, matchmaking, chat functionality, friend systems, and analytics for developers. Players can browse games, track achievements, and connect with friends."
+        }
+      ]
+    }
+  ]
+}
