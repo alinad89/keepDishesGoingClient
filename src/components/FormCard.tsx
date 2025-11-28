@@ -5,10 +5,12 @@ interface FormCardProps {
     icon?: ReactNode;
     title: string;
     description?: string;
-    children: React.ReactNode;
+    children: ReactNode;
     className?: string;
     step?: number | string;
 }
+
+const CUTOUT = 26; // still available if you want to reintroduce notches later
 
 function FormCard({
                       icon,
@@ -26,17 +28,22 @@ function FormCard({
                 position: "relative",
                 p: 0,
                 overflow: "hidden",
-                borderRadius: 3,
-                clipPath: "none",
-                background: "linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%)",
-                boxShadow: "0 8px 24px rgba(15, 23, 42, 0.55)",
-                transition: "transform 0.16s ease-out, box-shadow 0.16s ease-out",
+                borderRadius: "4px",
+                background:
+                    "linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.98))",
+                boxShadow: "0 18px 45px rgba(0, 0, 0, 0.75)",
+                backdropFilter: "blur(18px)",
+                WebkitBackdropFilter: "blur(18px)",
+                transform: "translateZ(0)",
+                transition:
+                    "transform 0.18s ease-out, box-shadow 0.18s ease-out",
                 "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 14px 32px rgba(15, 23, 42, 0.85)",
+                    transform: "translateY(-1px) translateZ(0)",
+                    boxShadow: "0 22px 55px rgba(0, 0, 0, 0.85)",
                 },
                 "&:focus-within": {
-                    boxShadow: "0 0 0 1px var(--accent), 0 0 22px var(--accent-glow)",
+                    boxShadow:
+                        "0 0 0 1px var(--accent), 0 0 24px var(--accent-glow)",
                 },
             }}
         >
@@ -46,24 +53,27 @@ function FormCard({
                     sx={{
                         position: "absolute",
                         top: 14,
-                        right: 14,
-                        minWidth: 34,
-                        height: 34,
-                        px: 1,
-                        borderRadius: 999,
-                        display: "flex",
+                        right: 16,
+                        px: 1.6,
+                        height: 26,
+                        display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        borderRadius: 999,
+                        fontSize: "0.7rem",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
                         background:
-                            "linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end))",
-                        color: "white",
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        boxShadow: "0 10px 22px rgba(15, 23, 42, 0.9)",
-                        zIndex: 1,
+                            "linear-gradient(135deg, rgba(168, 85, 255, 0.22), rgba(236, 72, 153, 0.28))",
+                        color: "var(--text-color)",
+                        border: "1px solid rgba(248, 250, 252, 0.12)",
+                        boxShadow: "0 8px 20px rgba(15, 23, 42, 0.9)",
+                        backdropFilter: "blur(14px)",
+                        WebkitBackdropFilter: "blur(14px)",
+                        zIndex: 2,
                     }}
                 >
-                    {step}
+                    STEP&nbsp;{step}
                 </Box>
             )}
 
@@ -74,62 +84,66 @@ function FormCard({
                     alignItems: "center",
                     gap: 2,
                     px: { xs: 2, md: 3 },
-                    py: { xs: 1.5, md: 2 },
-                    background:
-                        "linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(34, 197, 94, 0.04))",
+                    py: { xs: 1.6, md: 2.1 },
+                    background: "transparent", // no header strip
                     position: "relative",
-                    "&::after": {
-                        content: '""',
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        width: 120,
-                        height: 2,
-                        background: "linear-gradient(90deg, var(--accent), transparent)",
-                        opacity: 0.85,
-                    },
+                    zIndex: 1,
                 }}
             >
                 {icon && (
                     <Box
                         sx={{
-                            width: 44,
-                            height: 44,
+                            width: 42,
+                            height: 42,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: "1.8rem",
-                            background: "rgba(15, 23, 42, 0.85)",
+                            fontSize: "1.6rem",
+                            background:
+                                "radial-gradient(circle at 30% 0%, rgba(168, 85, 255, 0.35), rgba(15, 23, 42, 0.95))",
                             color: "var(--accent)",
                             borderRadius: "999px",
                             flexShrink: 0,
+                            border: "1px solid rgba(148, 163, 184, 0.45)",
+                            boxShadow: "0 10px 26px rgba(0, 0, 0, 0.85)",
                         }}
                     >
                         {icon}
                     </Box>
                 )}
 
-                <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 0.4 }}>
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.35,
+                    }}
+                >
                     <Typography
                         component="h2"
                         sx={{
-                            fontSize: { xs: "1rem", md: "1.15rem" },
-                            textTransform: "uppercase",
-                            letterSpacing: "0.16em",
+                            fontSize: { xs: "1.05rem", md: "1.18rem" },
                             fontWeight: 500,
-                            color: "var(--accent)",
-                            mb: description ? 0.25 : 0,
+                            letterSpacing: "0.04em",
+                            textTransform: "none",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            color: "var(--text-color)",
                         }}
                     >
                         {title}
                     </Typography>
+
                     {description && (
                         <Typography
                             component="p"
                             sx={{
-                                fontSize: "0.9rem",
+                                fontSize: "0.86rem",
                                 color: "var(--muted-text)",
-                                lineHeight: 1.6,
+                                lineHeight: 1.7,
+                                opacity: 0.9,
                             }}
                         >
                             {description}
@@ -142,10 +156,18 @@ function FormCard({
             <CardContent
                 sx={{
                     px: { xs: 2, md: 3 },
-                    py: { xs: 2, md: 2.4 },
+                    py: { xs: 2.1, md: 2.5 },
+                    position: "relative",
+                    zIndex: 1,
                 }}
             >
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                    }}
+                >
                     {children}
                 </Box>
             </CardContent>

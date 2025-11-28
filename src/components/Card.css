@@ -10,7 +10,6 @@
     position: relative;
     overflow: hidden;
     /* smoother hex-ish shape, similar to buttons but nicer for cards */
-    clip-path: var(--clip-shape-card);
 }
 
 .card::before {
@@ -40,7 +39,6 @@
     );
     opacity: 0;
     transition: opacity 0.4s ease;
-    clip-path: var(--clip-shape-card);
 }
 
 .card:hover {

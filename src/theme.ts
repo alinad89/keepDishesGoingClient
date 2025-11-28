@@ -1,38 +1,38 @@
 import { createTheme } from '@mui/material/styles';
 
 // Create MUI theme matching the existing Hexagon design system
-// Using light theme colors from App.css
+// Using dark theme colors from App.css
 export const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
-      main: '#194FCC', // --accent for light mode
-      light: '#2E5FDD', // --accent-gradient-end
-      dark: '#123A96', // --hover-accent
+      main: '#A855FF', // --accent for dark mode
+      light: '#E879F9', // --accent-gradient-end
+      dark: '#7C3AED', // --hover-accent
     },
     secondary: {
-      main: '#194FCC',
-      light: '#2E5FDD',
-      dark: '#123A96',
+      main: '#A855FF',
+      light: '#E879F9',
+      dark: '#7C3AED',
     },
     background: {
-      default: '#C1D4FF', // --bg-color
-      paper: '#D6E3FF', // --card-bg
+      default: '#1A1D21', // --bg-color
+      paper: '#2A2E34', // --card-bg
     },
     text: {
-      primary: '#05132E', // --text-color
-      secondary: '#304067', // --muted-text
+      primary: '#FFF6EF', // --text-color
+      secondary: '#B8C0DD', // --muted-text
     },
     error: {
       main: '#ef4444',
     },
     success: {
-      main: '#194FCC',
+      main: '#A855FF',
     },
-    divider: '#96B0F0', // --card-border
+    divider: '#3A4570', // --card-border
   },
   typography: {
-    fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    fontFamily: "'Gertika', sans-serif",
     fontWeightLight: 100,
     fontWeightRegular: 200,
     fontWeightMedium: 300,
@@ -95,7 +95,6 @@ export const theme = createTheme({
         root: {
           background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%)',
           boxShadow: '0 8px 25px var(--shadow-color), 0 0 20px var(--card-glow)',
-          clipPath: 'var(--clip-shape-card)',
         },
       },
     },
@@ -105,7 +104,6 @@ export const theme = createTheme({
           '& .MuiOutlinedInput-root': {
             background: 'var(--card-bg)',
             borderRadius: '4px',
-            clipPath: 'var(--clip-shape-input)',
             '& fieldset': {
               border: 'none',
             },
@@ -176,7 +174,6 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '4px',
-          clipPath: 'var(--clip-shape-input)',
         },
         standardError: {
           background: 'rgba(239, 68, 68, 0.15)',

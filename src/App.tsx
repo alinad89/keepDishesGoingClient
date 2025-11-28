@@ -12,6 +12,7 @@ import ManageGamesPage from './pages/ManageGamesPage'
 import GameDetailsPage from './pages/GameDetailsPage'
 import EditGamePage from './pages/EditGamePage'
 import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
+import { ChatBox } from './components/ChatBox'
 import './App.css'
 
 function App() {
@@ -63,6 +64,9 @@ function App() {
             </>
           } />
         </Routes>
+
+        {/* Global Chat Widget */}
+        <ChatBox />
       </div>
     </BrowserRouter>
   )
