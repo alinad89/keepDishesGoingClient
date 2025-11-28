@@ -1,233 +1,10 @@
-import { useState, useRef, useEffect, useCallback, CSSProperties } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useCreateChat, useSendMessage, useChatList, useChatDetails } from '../hooks/useChats';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { fetchChatById } from '../api/chats';
 import type { ChatMessage } from '../types/api';
 import Button from './Button';
-
-// Styles
-const styles: Record<string, CSSProperties> = {
-  toggle: {
-    position: 'fixed',
-    bottom: '24px',
-    right: '24px',
-    width: '60px',
-    height: '60px',
-    borderRadius: '50%',
-    background: 'var(--accent)',
-    border: 'none',
-    color: 'var(--text-color)',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px var(--shadow-color)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-  },
-  container: {
-    position: 'fixed',
-    bottom: '24px',
-    right: '24px',
-    width: '680px',
-    height: '550px',
-    background: 'var(--bg-color)',
-    border: '1px solid var(--card-border)',
-    borderRadius: '12px',
-    boxShadow: '0 8px 24px var(--shadow-color)',
-    display: 'flex',
-    flexDirection: 'row',
-    zIndex: 1000,
-    overflow: 'hidden',
-  },
-  sidebar: {
-    width: '260px',
-    background: 'var(--card-bg)',
-    borderRight: '1px solid var(--card-border)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  sidebarHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px',
-    borderBottom: '1px solid var(--card-border)',
-  },
-  sidebarTitle: {
-    margin: 0,
-    fontSize: '14px',
-    fontWeight: 600,
-    color: 'var(--text-color)',
-  },
-  newChatBtn: {
-    background: 'transparent',
-    border: '1px solid var(--card-border)',
-    color: 'var(--text-color)',
-    width: '32px',
-    height: '32px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s',
-  },
-  chatList: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '8px',
-  },
-  noChats: {
-    padding: '20px',
-    textAlign: 'center',
-    color: 'var(--muted-text)',
-    fontSize: '14px',
-  },
-  chatItem: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '12px',
-    background: 'transparent',
-    border: 'none',
-    borderRadius: '8px',
-    color: 'var(--text-color)',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    textAlign: 'left',
-    marginBottom: '4px',
-  },
-  chatItemActive: {
-    background: 'var(--accent)',
-    color: 'var(--text-color)',
-  },
-  chatName: {
-    flex: 1,
-    fontSize: '14px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  main: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    background: 'var(--accent)',
-    color: 'var(--text-color)',
-    borderBottom: '1px solid var(--card-border)',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  headerTitle: {
-    margin: 0,
-    fontSize: '18px',
-    fontWeight: 600,
-  },
-  status: {
-    fontSize: '12px',
-    cursor: 'help',
-  },
-  statusConnected: {
-    color: '#4ade80',
-    animation: 'pulse 2s ease-in-out infinite',
-  },
-  statusDisconnected: {
-    color: '#f87171',
-  },
-  closeBtn: {
-    background: 'transparent',
-    border: 'none',
-    color: 'var(--text-color)',
-    cursor: 'pointer',
-    padding: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '4px',
-    transition: 'background 0.2s',
-  },
-  messages: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  empty: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: 'var(--muted-text)',
-    textAlign: 'center',
-    padding: '20px',
-  },
-  message: {
-    display: 'flex',
-    maxWidth: '80%',
-  },
-  messageUser: {
-    alignSelf: 'flex-end',
-  },
-  messageAi: {
-    alignSelf: 'flex-start',
-  },
-  messageContent: {
-    padding: '10px 14px',
-    borderRadius: '12px',
-    wordWrap: 'break-word',
-    lineHeight: 1.5,
-    fontSize: '14px',
-  },
-  messageContentUser: {
-    background: 'var(--accent)',
-    color: 'var(--text-color)',
-    borderBottomRightRadius: '4px',
-  },
-  messageContentAi: {
-    background: 'var(--card-bg)',
-    color: 'var(--text-color)',
-    borderBottomLeftRadius: '4px',
-    border: '1px solid var(--card-border)',
-  },
-  inputContainer: {
-    display: 'flex',
-    gap: '8px',
-    padding: '16px',
-    borderTop: '1px solid var(--card-border)',
-    background: 'var(--bg-color)',
-  },
-  input: {
-    flex: 1,
-    padding: '10px 14px',
-    border: '1px solid var(--card-border)',
-    borderRadius: '8px',
-    background: 'var(--card-bg)',
-    color: 'var(--text-color)',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  },
-  sendBtn: {
-    padding: '10px 20px',
-    minWidth: '70px',
-    fontSize: '14px',
-  },
-};
+import './ChatBox.css';
 
 export function ChatBox() {
   const [isOpen, setIsOpen] = useState(false);
@@ -235,8 +12,6 @@ export function ChatBox() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const [hoveredNewChatBtn, setHoveredNewChatBtn] = useState(false);
-  const [hoveredChatItem, setHoveredChatItem] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollTimeoutRef = useRef<number | null>(null);
 
@@ -459,19 +234,7 @@ export function ChatBox() {
 
   if (!isOpen) {
     return (
-      <button
-        style={styles.toggle}
-        onClick={() => setIsOpen(true)}
-        aria-label="Open chat"
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-        }}
-      >
+      <button className="chatbox-toggle" onClick={() => setIsOpen(true)} aria-label="Open chat">
         <svg
           width="24"
           height="24"
@@ -489,21 +252,12 @@ export function ChatBox() {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="chatbox-container">
       {/* Sidebar - Always show since backend uses hardcoded user */}
-      <div style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <h4 style={styles.sidebarTitle}>Chat History</h4>
-          <button
-            style={{
-              ...styles.newChatBtn,
-              ...(hoveredNewChatBtn ? { background: 'var(--accent)', borderColor: 'var(--accent)' } : {}),
-            }}
-            onClick={handleNewChat}
-            onMouseEnter={() => setHoveredNewChatBtn(true)}
-            onMouseLeave={() => setHoveredNewChatBtn(false)}
-            title="New Chat"
-          >
+      <div className="chatbox-sidebar">
+        <div className="chatbox-sidebar-header">
+          <h4 className="chatbox-sidebar-title">Chat History</h4>
+          <button className="chatbox-new-chat-btn" onClick={handleNewChat} title="New Chat">
             <svg
               width="18"
               height="18"
@@ -519,21 +273,15 @@ export function ChatBox() {
             </svg>
           </button>
         </div>
-        <div style={styles.chatList}>
+        <div className="chatbox-chat-list">
           {chats.length === 0 ? (
-            <div style={styles.noChats}>No chats yet</div>
+            <div className="chatbox-no-chats">No chats yet</div>
           ) : (
             chats.map((chat) => (
               <button
                 key={chat.id}
-                style={{
-                  ...styles.chatItem,
-                  ...(selectedChatId === chat.id ? styles.chatItemActive : {}),
-                  ...(hoveredChatItem === chat.id && selectedChatId !== chat.id ? { background: 'var(--bg-color)' } : {}),
-                }}
+                className={`chatbox-chat-item ${selectedChatId === chat.id ? 'chatbox-chat-item-active' : ''}`}
                 onClick={() => handleSelectChat(chat.id)}
-                onMouseEnter={() => setHoveredChatItem(chat.id)}
-                onMouseLeave={() => setHoveredChatItem(null)}
                 title={chat.chatName || 'Untitled Chat'}
               >
                 <svg
@@ -548,7 +296,7 @@ export function ChatBox() {
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
-                <span style={styles.chatName}>
+                <span className="chatbox-chat-name">
                   {truncateChatName(chat.chatName)}
                 </span>
               </button>
@@ -558,31 +306,18 @@ export function ChatBox() {
       </div>
 
       {/* Main chat area */}
-      <div style={styles.main}>
-        <div style={styles.header}>
-          <div style={styles.headerLeft}>
-            <h3 style={styles.headerTitle}>Chat Assistant</h3>
+      <div className="chatbox-main">
+        <div className="chatbox-header">
+          <div className="chatbox-header-left">
+            <h3 className="chatbox-header-title">Chat Assistant</h3>
             <span
-              style={{
-                ...styles.status,
-                ...(isConnected ? styles.statusConnected : styles.statusDisconnected),
-              }}
+              className={`chatbox-status ${isConnected ? 'chatbox-status-connected' : 'chatbox-status-disconnected'}`}
               title={isConnected ? 'Connected' : wsError || 'Disconnected'}
             >
               ●
             </span>
           </div>
-          <button
-            style={styles.closeBtn}
-            onClick={() => setIsOpen(false)}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-            }}
-            aria-label="Close chat"
-          >
+          <button className="chatbox-close-btn" onClick={() => setIsOpen(false)} aria-label="Close chat">
             <svg
               width="20"
               height="20"
@@ -599,25 +334,19 @@ export function ChatBox() {
           </button>
         </div>
 
-        <div style={styles.messages}>
+        <div className="chatbox-messages">
           {messages.length === 0 ? (
-            <div style={styles.empty}>
+            <div className="chatbox-empty">
               <p>Start a conversation! Ask me anything.</p>
             </div>
           ) : (
             messages.map((msg, index) => (
               <div
                 key={index}
-                style={{
-                  ...styles.message,
-                  ...(msg.aiMessage ? styles.messageAi : styles.messageUser),
-                }}
+                className={`chatbox-message ${msg.aiMessage ? 'chatbox-message-ai' : 'chatbox-message-user'}`}
               >
                 <div
-                  style={{
-                    ...styles.messageContent,
-                    ...(msg.aiMessage ? styles.messageContentAi : styles.messageContentUser),
-                  }}
+                  className={`chatbox-message-content ${msg.aiMessage ? 'chatbox-message-content-ai' : 'chatbox-message-content-user'}`}
                 >
                   {msg.content}
                 </div>
@@ -627,28 +356,21 @@ export function ChatBox() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div style={styles.inputContainer}>
+        <div className="chatbox-input-container">
           <input
             type="text"
-            style={styles.input}
+            className="chatbox-input"
             placeholder="Type your message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={loading}
-            onFocus={(e) => {
-              (e.target as HTMLInputElement).style.borderColor = 'var(--accent)';
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLInputElement).style.borderColor = 'var(--card-border)';
-            }}
           />
           <Button
             variant="primary"
             onClick={handleSendMessage}
             disabled={loading || !message.trim()}
             className="chatbox-send-btn"
-            style={styles.sendBtn}
           >
             {loading ? '...' : 'Send'}
           </Button>
