@@ -21,7 +21,7 @@
 /* ----- DARK THEME ----- */
 :root[data-theme='dark'] {
     --bg-color: #3C0729;        /* a bit deeper, more burgundy */
-    --card-bg: #7C0F33;         /* darker card background */
+    --card-bg: #7C0F34;         /* darker card background */
     --card-border: #9E1A43;     /* slightly deeper border */
 
     /* brighter, more readable text */
