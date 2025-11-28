@@ -44,12 +44,11 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
           fontWeight: 300,
         }}
       >
-        Select Tags * (Choose at least one)
+        Select Tags
       </Typography>
       <Controller
         name="tags"
         control={control}
-        rules={{ required: 'Please select at least one tag' }}
         render={({ field }) => (
           <Box
             sx={{

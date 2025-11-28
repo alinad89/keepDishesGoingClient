@@ -35,7 +35,6 @@ function Card({ icon, title, description, children, className = '' }: CardProps)
           background: 'radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent 55%)',
           opacity: 0,
           transition: 'opacity 0.4s ease',
-          clipPath: 'polygon(7% 0%, 93% 0%, 100% 18%, 100% 82%, 93% 100%, 7% 100%, 0% 82%, 0% 18%)',
         },
         '&:hover': {
           transform: 'translateY(-10px) scale(1.02)',

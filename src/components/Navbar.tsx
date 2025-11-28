@@ -3,24 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import './Navbar.css'
 
 function Navbar() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
-    if (savedTheme) {
-      setTheme(savedTheme)
-      document.documentElement.setAttribute('data-theme', savedTheme)
-    }
+    // Always set dark mode
+    document.documentElement.setAttribute('data-theme', 'dark')
   }, [])
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-    localStorage.setItem('theme', newTheme)
-  }
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen)
@@ -43,7 +32,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/logo.png" alt="Hexagon Logo" style={{ height: '50px', width: 'auto' }} />
+          <img src="/images/hexagon-platform-logo.png" alt="Hexagon Logo" style={{ height: '50px', width: 'auto' }} />
           <span>Hexagon</span>
         </Link>
 
@@ -67,13 +56,6 @@ function Navbar() {
               </li>
             ))}
           </ul>
-
-          <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle theme">
-            {theme === 'light' ? '🌙' : '🌞'}
-            <span className="theme-toggle-label">
-              {theme === 'light' ? 'Dark' : 'Light'}
-            </span>
-          </button>
         </div>
       </div>
     </nav>

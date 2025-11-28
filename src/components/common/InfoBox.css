@@ -3,7 +3,7 @@
   padding: 2.5rem;
   box-shadow: 0 8px 25px var(--shadow-color);
   position: relative;
-  clip-path: var(--clip-shape-info-box);
+  border-radius: 4px;
 }
 
 .info-box-accent {

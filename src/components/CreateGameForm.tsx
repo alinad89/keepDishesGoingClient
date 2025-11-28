@@ -52,16 +52,6 @@ export function CreateGameForm() {
   const deploymentMode = watch('deploymentMode');
 
   const onSubmit = async (data: CreateGameFormData) => {
-    // Validate required files
-    if (!data.thumbnail || data.thumbnail.length === 0) {
-      alert('Please select a thumbnail image');
-      return;
-    }
-    if (!data.coverImage || data.coverImage.length === 0) {
-      alert('Please select a cover image');
-      return;
-    }
-
     // Validate deployment-mode-specific requirements
     if (data.deploymentMode === 'url') {
       if (!data.url) {
@@ -86,8 +76,8 @@ export function CreateGameForm() {
         version: data.version,
         url: data.url || '',
       },
-      thumbnail: data.thumbnail[0],
-      coverImage: data.coverImage[0],
+      thumbnail: data.thumbnail?.[0],
+      coverImage: data.coverImage?.[0],
       backendFiles: data.backendFiles?.[0],
     };
 

@@ -140,5 +140,7 @@ export interface CreateMessageRequest {
 }
 
 export interface CreateMessageResponse {
-  id: string;
+  id?: string; // Deprecated: some endpoints might use this
+  chatId: string; // The actual field the backend returns
+  message?: ChatMessage; // Optional: Backend might include AI response here
 }

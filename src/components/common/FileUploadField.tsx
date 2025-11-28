@@ -9,9 +9,8 @@ const FileInput = styled('input')({
   color: 'var(--text-color)',
   borderRadius: '4px',
   width: '100%',
-  clipPath: 'var(--clip-shape-input)',
   transition: 'all 0.3s ease',
-  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  fontFamily: "'Gertika', sans-serif",
   '&:hover': {
     opacity: 0.9,
   },
