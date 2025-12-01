@@ -41,13 +41,15 @@ variables:
 # ========================================
 
 # rules for jobs that run on both MRs and default branch
-.rules_build_test: &rules_build_test
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+.rules_build_test:
+  rules: &rules_build_test
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
 
 # rules for jobs that run ONLY on default branch
-.rules_package: &rules_package
-  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+.rules_package:
+  rules: &rules_package
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
 
 
 # ========================================
@@ -64,7 +66,6 @@ build:
     - echo "NPM version:" && npm --version
   script:
     - npm ci --prefer-offline --no-audit
-
     - |
       if grep -q '"typecheck"' package.json; then
         echo "Running TypeScript type checking..."
@@ -72,10 +73,8 @@ build:
       else
         echo "No typecheck script found, skipping type check"
       fi
-
     - echo "Building React application..."
     - npm run build
-
     - ls -la ${DIST_DIR}/ || echo "Warning: ${DIST_DIR} directory not found"
   artifacts:
     expire_in: 1 week
@@ -99,7 +98,6 @@ test:
     - mkdir -p ${REPORTS_DIR}
   script:
     - npm ci --prefer-offline --no-audit
-
     - |
       if grep -q '"test:ci"' package.json; then
         echo "Running npm run test:ci"
@@ -137,7 +135,6 @@ code_quality:
     - echo "Running code quality (lint) checks..."
   script:
     - npm ci --prefer-offline --no-audit
-
     - |
       if grep -q '"lint:ci"' package.json; then
         echo "Running npm run lint:ci"
@@ -148,7 +145,6 @@ code_quality:
       else
         echo "No lint script found, skipping linting"
       fi
-
     - echo "[]" > gl-code-quality-report.json
   artifacts:
     when: always
