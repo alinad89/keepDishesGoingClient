@@ -10,8 +10,6 @@ interface FormCardProps {
     step?: number | string;
 }
 
-const CUTOUT = 26; // still available if you want to reintroduce notches later
-
 function FormCard({
                       icon,
                       title,

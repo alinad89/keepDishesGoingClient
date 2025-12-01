@@ -19,7 +19,7 @@ export function ChatBox() {
   const { chats, refetch: refetchChats } = useChatList();
 
   // Fetch selected chat details
-  const { chat: selectedChat, refetch: refetchChatDetails } = useChatDetails(selectedChatId);
+  const { chat: selectedChat } = useChatDetails(selectedChatId);
 
   const { createChatAsync, loading: createLoading } = useCreateChat();
   const { sendMessageAsync, loading: sendLoading } = useSendMessage();
@@ -176,7 +176,12 @@ export function ChatBox() {
         // Create new chat via HTTP POST
         console.log('Creating new chat...');
         const response = await createChatAsync({ message: userMessage.content });
-        const newChatId = response.chatId || response.id; // Backend returns chatId
+        const newChatId = response.chatId ?? response.id ?? null; // Backend returns chatId
+
+        if (!newChatId) {
+          throw new Error('Chat ID was not returned from create chat response');
+        }
+
         console.log('Chat created with ID:', newChatId);
         console.log('Response:', response);
 
@@ -188,9 +193,10 @@ export function ChatBox() {
 
         // FALLBACK: If response includes the AI message, add it immediately
         // This handles cases where WebSocket isn't connected yet
-        if (response.message && response.message.aiMessage) {
-          console.log('Adding AI response from HTTP response:', response.message);
-          setMessages((prev) => [...prev, response.message]);
+        if (response.message?.aiMessage) {
+          const aiMessage = response.message;
+          console.log('Adding AI response from HTTP response:', aiMessage);
+          setMessages((prev) => [...prev, aiMessage]);
         } else {
           console.log('Waiting for AI response via WebSocket...');
           // Schedule a poll as fallback in case WebSocket misses the message
@@ -199,17 +205,19 @@ export function ChatBox() {
       } else {
         // Send to existing chat via HTTP POST
         console.log('Sending message to chat:', chatId);
-        const response = await sendMessageAsync(chatId, { message: userMessage.content });
+        const existingChatId = chatId;
+        const response = await sendMessageAsync(existingChatId, { message: userMessage.content });
         console.log('Message sent, response:', response);
 
         // FALLBACK: If response includes the AI message, add it immediately
-        if (response.message && response.message.aiMessage) {
-          console.log('Adding AI response from HTTP response:', response.message);
-          setMessages((prev) => [...prev, response.message]);
+        if (response.message?.aiMessage) {
+          const aiMessage = response.message;
+          console.log('Adding AI response from HTTP response:', aiMessage);
+          setMessages((prev) => [...prev, aiMessage]);
         } else {
           console.log('Waiting for AI response via WebSocket...');
           // Schedule a poll as fallback in case WebSocket misses the message
-          schedulePollForMessages(chatId);
+          schedulePollForMessages(existingChatId);
         }
       }
     } catch (error) {
