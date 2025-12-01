@@ -171,6 +171,67 @@
     transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* Authentication styles */
+.navbar-auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    color: var(--text-color);
+    font-weight: 200;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.btn-login,
+.btn-logout {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 200;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    clip-path: var(--clip-shape-button);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login {
+    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end));
+    color: var(--bg-color);
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-logout {
+    background: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--accent);
+}
+
+.btn-logout:hover {
+    background: linear-gradient(135deg, var(--accent-gradient-start), var(--accent-gradient-end));
+    color: var(--bg-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     .navbar-container {
@@ -223,6 +284,27 @@
 
     .navbar-links a.active::after {
         display: none;
+    }
+
+    .navbar-auth {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navbar-user {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .user-name {
+        text-align: center;
+    }
+
+    .btn-login,
+    .btn-logout {
+        width: 100%;
+        padding: 0.75rem 1rem;
     }
 
     .theme-toggle-btn {

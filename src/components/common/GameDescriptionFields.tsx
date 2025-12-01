@@ -1,12 +1,12 @@
 import { TextField, FormHelperText } from '@mui/material';
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues } from 'react-hook-form';
 
-interface GameDescriptionFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+interface GameDescriptionFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 }
 
-function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps) {
+function GameDescriptionFields<T extends FieldValues>({ register, errors }: GameDescriptionFieldsProps<T>) {
   return (
     <>
       <TextField

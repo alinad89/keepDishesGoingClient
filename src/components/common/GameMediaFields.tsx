@@ -1,12 +1,12 @@
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues } from 'react-hook-form';
 import FileUploadField from './FileUploadField';
 
-interface GameMediaFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+interface GameMediaFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 }
 
-function GameMediaFields({ register, errors }: GameMediaFieldsProps) {
+function GameMediaFields<T extends FieldValues>({ register, errors }: GameMediaFieldsProps<T>) {
   return (
     <>
       <FileUploadField

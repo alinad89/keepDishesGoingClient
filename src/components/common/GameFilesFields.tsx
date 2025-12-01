@@ -1,15 +1,15 @@
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues } from 'react-hook-form';
 import { FormControl, InputLabel, Select, MenuItem, TextField, FormHelperText } from '@mui/material';
 import FileUploadField from './FileUploadField';
 import type { DeploymentMode } from '../../types/api';
 
-interface GameFilesFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+interface GameFilesFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
   deploymentMode: DeploymentMode;
 }
 
-function GameFilesFields({ register, errors, deploymentMode }: GameFilesFieldsProps) {
+function GameFilesFields<T extends FieldValues>({ register, errors, deploymentMode }: GameFilesFieldsProps<T>) {
   return (
     <>
       <FormControl fullWidth>
