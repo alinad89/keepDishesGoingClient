@@ -169,7 +169,7 @@ package:
   script:
     - echo "Building Docker image for $CI_REGISTRY_IMAGE..."
     - docker build --pull --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" --tag "$CI_REGISTRY_IMAGE:latest" --file Dockerfile .
-    - echo "Pushing Docker image with tags: $CI_COMMIT_SHA and latest"
+    - 'echo "Pushing Docker image with tags: $CI_COMMIT_SHA and latest"'
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
     - docker push "$CI_REGISTRY_IMAGE:latest"
     - echo "Successfully pushed images:"
