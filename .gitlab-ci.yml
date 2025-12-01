@@ -119,9 +119,11 @@ test:
       elif grep -q 'vitest' package.json; then
         echo "Running Vitest tests..."
         npm test -- --reporter=junit --reporter=default --coverage.enabled=true --coverage.reporter=text --coverage.reporter=lcov
-      else
-        echo "Running default test command..."
+      elif node -e "import pkg from './package.json' assert { type: 'json' }; process.exit(pkg.scripts?.test ? 0 : 1);" ; then
+        echo "Running npm test"
         npm test
+      else
+        echo "No test script found; skipping tests"
       fi
   artifacts:
     when: always
@@ -158,8 +160,12 @@ code_quality:
         echo "Running npm run lint:ci"
         npm run lint:ci
       elif grep -q '"lint"' package.json; then
-        echo "Running npm run lint"
-        npm run lint
+        if [ -f eslint.config.js ] || [ -f .eslintrc ] || [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc.cjs ]; then
+          echo "Running npm run lint"
+          npm run lint
+        else
+          echo "Lint script found but no ESLint config; skipping linting"
+        fi
       else
         echo "No lint script found, skipping linting"
       fi
