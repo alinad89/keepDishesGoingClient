@@ -1,10 +1,13 @@
 import { TextField, FormHelperText } from '@mui/material';
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 interface GameDescriptionFieldsProps {
   register: UseFormRegister<any>;
   errors: FieldErrors<any>;
 }
+
+const getErrorMessage = (error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>) =>
+  typeof error?.message === 'string' ? error.message : undefined;
 
 function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps) {
   return (
@@ -26,7 +29,7 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
       />
       {errors.shortDescription && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.shortDescription.message}
+          {getErrorMessage(errors.shortDescription)}
         </FormHelperText>
       )}
 
@@ -40,7 +43,7 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
       />
       {errors.description && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.description.message}
+          {getErrorMessage(errors.description)}
         </FormHelperText>
       )}
 
@@ -54,7 +57,7 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
       />
       {errors.rules && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.rules.message}
+          {getErrorMessage(errors.rules)}
         </FormHelperText>
       )}
     </>
