@@ -75,7 +75,8 @@ build:
       fi
     - echo "Building React application..."
     - npm run build
-    - ls -la ${DIST_DIR}/ || echo "Warning: ${DIST_DIR} directory not found"
+    - 'ls -la ${DIST_DIR}/ || echo "Warning: ${DIST_DIR} directory not found"'
+
   artifacts:
     expire_in: 1 week
     paths:
