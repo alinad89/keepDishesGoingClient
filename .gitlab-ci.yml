@@ -62,7 +62,14 @@ build:
     - echo "Node version:" && node --version
     - echo "NPM version:" && npm --version
   script:
-    - npm ci --prefer-offline --no-audit
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
     - |
       if grep -q '"typecheck"' package.json; then
         echo "Running TypeScript type checking..."
@@ -94,7 +101,14 @@ test:
     - echo "Running unit tests..."
     - mkdir -p ${REPORTS_DIR}
   script:
-    - npm ci --prefer-offline --no-audit
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
     - |
       if grep -q '"test:ci"' package.json; then
         echo "Running npm run test:ci"
@@ -131,7 +145,14 @@ code_quality:
   before_script:
     - echo "Running code quality (lint) checks..."
   script:
-    - npm ci --prefer-offline --no-audit
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
     - |
       if grep -q '"lint:ci"' package.json; then
         echo "Running npm run lint:ci"
