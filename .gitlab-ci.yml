@@ -180,11 +180,9 @@ package:
         --tag "$CI_REGISTRY_IMAGE:latest" \
         --file Dockerfile \
         .
-
     - echo "Pushing Docker image with tags: $CI_COMMIT_SHA and latest"
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
     - docker push "$CI_REGISTRY_IMAGE:latest"
-
     - echo "Successfully pushed images:"
     - echo "  - $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
     - echo "  - $CI_REGISTRY_IMAGE:latest"
