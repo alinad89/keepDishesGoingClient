@@ -37,20 +37,17 @@ variables:
   policy: pull-push
 
 # ========================================
-# config blocks
+# Rules Config
 # ========================================
 
 # rules for jobs that run on both MRs and default branch
-.rules_build_test:
-  rules: &rules_build_test
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+.rules_build_test: &rules_build_test
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
 
 # rules for jobs that run ONLY on default branch
-.rules_package:
-  rules: &rules_package
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
-
+.rules_package: &rules_package
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
 
 # ========================================
 # BUILD STAGE
@@ -76,7 +73,6 @@ build:
     - echo "Building React application..."
     - npm run build
     - 'ls -la ${DIST_DIR}/ || echo "Warning: ${DIST_DIR} directory not found"'
-
   artifacts:
     expire_in: 1 week
     paths:
@@ -157,7 +153,6 @@ code_quality:
   allow_failure: true
   rules: *rules_build_test
 
-
 # ===============
 # PACKAGE STAGE
 # ===============
@@ -173,14 +168,13 @@ package:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - echo "Building Docker image for $CI_REGISTRY_IMAGE..."
-    - |
-      docker build \
-        --pull \
-        --cache-from "$CI_REGISTRY_IMAGE:latest" \
-        --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
-        --tag "$CI_REGISTRY_IMAGE:latest" \
-        --file Dockerfile \
-        .
+    - >
+      docker build --pull
+      --cache-from "$CI_REGISTRY_IMAGE:latest"
+      --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+      --tag "$CI_REGISTRY_IMAGE:latest"
+      --file Dockerfile
+      .
     - echo "Pushing Docker image with tags: $CI_COMMIT_SHA and latest"
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
     - docker push "$CI_REGISTRY_IMAGE:latest"
