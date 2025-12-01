@@ -1,6 +1,6 @@
 import { Box, Typography, Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import type { Control, FieldErrors } from 'react-hook-form';
+import type { Control, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 const GAME_TAGS = [
   'STRATEGY',
@@ -30,6 +30,9 @@ interface GameTagsSelectorProps {
   errors: FieldErrors<any>;
   selectedTags: string[];
 }
+
+const getErrorMessage = (error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>) =>
+  typeof error?.message === 'string' ? error.message : undefined;
 
 function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorProps) {
   return (
@@ -82,7 +85,7 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
       />
       {errors.tags && (
         <FormHelperText error sx={{ mt: 1 }}>
-          {errors.tags.message}
+          {getErrorMessage(errors.tags)}
         </FormHelperText>
       )}
       {selectedTags && selectedTags.length > 0 && (
