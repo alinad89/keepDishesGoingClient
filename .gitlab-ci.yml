@@ -42,15 +42,13 @@ variables:
 
 # rules for jobs that run on both MRs and default branch
 .rules_build_test: &rules_build_test
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
 
 # rules for jobs that run ONLY on default branch
 .rules_package: &rules_package
-  rules:
-    # only run on default branch pushes, NOT on merge requests
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+
 
 # ========================================
 # BUILD STAGE
