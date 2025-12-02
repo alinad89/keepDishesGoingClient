@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import { registerDeveloper } from '../api/developers';
+import { useRegisterDeveloper } from '../hooks/useDevelopers';
 import { isDeveloper, ROLES } from '../utils/keycloakRoles';
 
 // ========================================
@@ -33,29 +32,16 @@ export default function AuthCallback() {
   const error = searchParams.get('error') ||
     new URLSearchParams(window.location.hash.substring(1)).get('error');
 
-  // Mutation to register developer in backend
-  const { mutate: ensureDeveloper } = useMutation({
-    mutationFn: async () => {
-      const response = await registerDeveloper();
-      console.log('[AuthCallback] Developer registered:', response);
-      return response;
-    },
-    onSuccess: () => {
-      // Redirect to developer dashboard after successful registration
-      navigate('/developer/dashboard');
-    },
-    onError: (error) => {
-      console.error('[AuthCallback] Failed to register developer:', error);
-      // Still redirect to dashboard, backend might already have the user
-      navigate('/developer/dashboard');
-    },
-  });
+  // Use the hook to register developer in backend
+  const { registerDeveloperAsync } = useRegisterDeveloper();
 
   useEffect(() => {
     console.log('[AuthCallback] State:', {
       initialized,
       authenticated: keycloak.authenticated,
       error,
+      intendedRole,
+      hasDeveloperRole: keycloak.authenticated ? isDeveloper(keycloak) : false,
       currentUrl: window.location.href,
       hash: window.location.hash,
       search: window.location.search,
@@ -95,8 +81,17 @@ export default function AuthCallback() {
 
       if (!alreadySynced) {
         console.log('[AuthCallback] Registering developer in backend...');
-        ensureDeveloper();
-        sessionStorage.setItem(syncKey, 'true');
+        registerDeveloperAsync()
+          .then((response) => {
+            console.log('[AuthCallback] Developer registered:', response);
+            sessionStorage.setItem(syncKey, 'true');
+            navigate('/developer/dashboard');
+          })
+          .catch((error) => {
+            console.error('[AuthCallback] Failed to register developer:', error);
+            // Still redirect to dashboard, backend might already have the user
+            navigate('/developer/dashboard');
+          });
       } else {
         // Already synced, just redirect
         navigate('/developer/dashboard');
@@ -106,7 +101,7 @@ export default function AuthCallback() {
       console.log('[AuthCallback] Player login, redirecting to games...');
       navigate('/games');
     }
-  }, [initialized, keycloak.authenticated, keycloak, intendedRole, ensureDeveloper, navigate, error]);
+  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, navigate, error]);
 
   return (
     <Box

@@ -35,21 +35,21 @@ export default function AuthLanding() {
   // Handle login button click
   const handleLogin = () => {
     // Login will redirect to a callback page that determines routing based on role
-    const redirectUri = `${window.location.origin}`;
+    const redirectUri = `${window.location.origin}/auth/callback`;
     keycloak.login({ redirectUri });
   };
 
   // Handle developer registration
   const handleDeveloperRegister = () => {
     // Register with a redirect URI that includes role information
-    const redirectUri = `${window.location.origin}`;
+    const redirectUri = `${window.location.origin}/auth/callback?role=developer`;
     keycloak.register({ redirectUri });
   };
 
   // Handle player registration
   const handlePlayerRegister = () => {
     // Register with a redirect URI that includes role information
-    const redirectUri = `${window.location.origin}`;
+    const redirectUri = `${window.location.origin}/auth/callback`;
     keycloak.register({ redirectUri });
   };
 
