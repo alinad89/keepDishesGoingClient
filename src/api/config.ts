@@ -1,23 +1,13 @@
 import type { ApiErrorResponse } from '../types/api';
+import keycloak from '../keycloak';
 
-// ========================================
-// API Configuration
-// ========================================
-
-// Base URL for real backend
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-// Mock backend URL (JSON Server) - used during development
 export const MOCK_API_URL = import.meta.env.VITE_MOCK_API_URL || 'http://localhost:3001';
 
-// Toggle between real and mock API
 export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
 
 export const EFFECTIVE_API_URL = USE_MOCK_API ? MOCK_API_URL : API_BASE_URL;
-
-// ========================================
-// API Endpoints (Developer BC)
-// ========================================
 
 export const DEVELOPER_ENDPOINTS = {
   register: '/developers',
@@ -31,9 +21,6 @@ export const DEVELOPER_ENDPOINTS = {
     USE_MOCK_API ? `/achievements/${achId}` : `/games/${gameId}/achievements/${achId}`,
 } as const;
 
-// ========================================
-// API Endpoints (Chatbot BC)
-// ========================================
 
 export const CHATBOT_ENDPOINTS = {
   platformInfo: '/platform/info',
@@ -41,41 +28,28 @@ export const CHATBOT_ENDPOINTS = {
   chatById: (id: string) => `/chats/${id}`,
 } as const;
 
-// ========================================
-// Authentication
-// ========================================
 
-/**
- * Get JWT token from storage
- */
+//Get JWT token from Keycloak
 export function getAuthToken(): string | null {
-  return localStorage.getItem('auth_token');
+  if (keycloak.authenticated && keycloak.token) {
+    return keycloak.token;
+  }
+  return null;
 }
 
-/**
- * Set JWT token in storage
- */
 export function setAuthToken(token: string): void {
+  console.warn('[API Config] setAuthToken is deprecated - use Keycloak for authentication');
   localStorage.setItem('auth_token', token);
 }
 
-/**
- * Clear JWT token from storage
- */
 export function clearAuthToken(): void {
+  console.warn('[API Config] clearAuthToken is deprecated - use keycloak.logout()');
   localStorage.removeItem('auth_token');
 }
 
-/**
- * Check if user is authenticated
- */
 export function isAuthenticated(): boolean {
-  return getAuthToken() !== null;
+  return keycloak.authenticated === true;
 }
-
-// ========================================
-// API Error Class
-// ========================================
 
 export class ApiError extends Error {
   status: number;
@@ -111,13 +85,7 @@ export class ApiError extends Error {
   }
 }
 
-// ========================================
-// Helper Functions
-// ========================================
 
-/**
- * Build complete URL with base
- */
 export function buildUrl(endpoint: string): string {
   const base = EFFECTIVE_API_URL;
   // Remove leading slash from endpoint if base already has trailing slash
@@ -178,6 +146,20 @@ export async function apiFetch<T>(
   const url = buildUrl(endpoint);
 
   try {
+    // Refresh Keycloak token if it expires in <30 seconds
+    if (keycloak.authenticated) {
+      try {
+        const refreshed = await keycloak.updateToken(30);
+        if (refreshed) {
+          console.log('[API Config] Token was refreshed before fetch');
+        }
+      } catch (error) {
+        console.error('[API Config] Failed to refresh token:', error);
+        keycloak.logout();
+        throw new Error('Token refresh failed');
+      }
+    }
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -190,6 +172,21 @@ export async function apiFetch<T>(
     if (response.status === 204) {
       return undefined as T;
     }
+
+    // Handle 401 Unauthorized - logout user
+    /*if (response.status === 401) {
+      console.error('[API Config] 401 Unauthorized - logging out user');
+      keycloak.logout();
+      throw new ApiError(
+        401,
+        'Unauthorized',
+        'Session expired. Please log in again.',
+        url,
+        new Date().toISOString()
+      );
+    }
+
+     */
 
     // Handle errors
     if (!response.ok) {
@@ -225,14 +222,28 @@ export async function apiUpload<T>(
 ): Promise<T> {
   const url = buildUrl(endpoint);
 
-  // Get headers WITHOUT Content-Type (browser sets it for multipart)
-  const headers: HeadersInit = {};
-  const token = getAuthToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   try {
+    // Refresh Keycloak token if it expires in <30 seconds
+    if (keycloak.authenticated) {
+      try {
+        const refreshed = await keycloak.updateToken(30);
+        if (refreshed) {
+          console.log('[API Config] Token was refreshed before upload');
+        }
+      } catch (error) {
+        console.error('[API Config] Failed to refresh token:', error);
+        keycloak.logout();
+        throw new Error('Token refresh failed');
+      }
+    }
+
+    // Get headers WITHOUT Content-Type (browser sets it for multipart)
+    const headers: HeadersInit = {};
+    const token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
       method,
       headers,
@@ -243,6 +254,21 @@ export async function apiUpload<T>(
     if (response.status === 204) {
       return undefined as T;
     }
+
+    // Handle 401 Unauthorized - logout user
+    /*if (response.status === 401) {
+      console.error('[API Config] 401 Unauthorized - logging out user');
+      keycloak.logout();
+      throw new ApiError(
+        401,
+        'Unauthorized',
+        'Session expired. Please log in again.',
+        url,
+        new Date().toISOString()
+      );
+    }
+
+     */
 
     // Handle errors
     if (!response.ok) {
@@ -273,7 +299,7 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
 
 export async function apiPost<T>(
   endpoint: string,
-  body?: any
+  body?: unknown
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
     method: 'POST',
@@ -283,7 +309,7 @@ export async function apiPost<T>(
 
 export async function apiPatch<T>(
   endpoint: string,
-  body?: any
+  body?: unknown
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
     method: 'PATCH',

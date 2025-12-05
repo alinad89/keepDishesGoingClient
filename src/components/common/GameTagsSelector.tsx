@@ -1,6 +1,6 @@
 import { Box, Typography, Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import type { Control, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
+import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 const GAME_TAGS = [
   'STRATEGY',
@@ -25,16 +25,13 @@ const GAME_TAGS = [
   'BOARD',
 ];
 
-interface GameTagsSelectorProps {
-  control: Control<any>;
-  errors: FieldErrors<any>;
+interface GameTagsSelectorProps<T extends FieldValues = FieldValues> {
+  control: Control<T>;
+  errors: FieldErrors<T>;
   selectedTags: string[];
 }
 
-const getErrorMessage = (error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>) =>
-  typeof error?.message === 'string' ? error.message : undefined;
-
-function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorProps) {
+function GameTagsSelector<T extends FieldValues = FieldValues>({ control, errors, selectedTags }: GameTagsSelectorProps<T>) {
   return (
     <Box>
       <Typography
@@ -50,7 +47,7 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
         Select Tags
       </Typography>
       <Controller
-        name="tags"
+        name={"tags" as Path<T>}
         control={control}
         render={({ field }) => (
           <Box
@@ -85,7 +82,7 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
       />
       {errors.tags && (
         <FormHelperText error sx={{ mt: 1 }}>
-          {getErrorMessage(errors.tags)}
+          {errors.tags.message?.toString()}
         </FormHelperText>
       )}
       {selectedTags && selectedTags.length > 0 && (

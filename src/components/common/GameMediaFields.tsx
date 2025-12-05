@@ -1,28 +1,28 @@
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues, Path, FieldError } from 'react-hook-form';
 import FileUploadField from './FileUploadField';
 
-interface GameMediaFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+interface GameMediaFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 }
 
-function GameMediaFields({ register, errors }: GameMediaFieldsProps) {
+function GameMediaFields<T extends FieldValues>({ register, errors }: GameMediaFieldsProps<T>) {
   return (
     <>
       <FileUploadField
         label="Thumbnail Image"
         helperText="Small preview image (recommended: 300x200px)"
         accept="image/*"
-        error={errors.thumbnail}
-        registration={register('thumbnail')}
+        error={errors.thumbnail as FieldError | undefined}
+        registration={register('thumbnail' as Path<T>)}
       />
 
       <FileUploadField
         label="Cover Image"
         helperText="Large cover image (recommended: 1920x1080px)"
         accept="image/*"
-        error={errors.coverImage}
-        registration={register('coverImage')}
+        error={errors.coverImage as FieldError | undefined}
+        registration={register('coverImage' as Path<T>)}
       />
     </>
   );

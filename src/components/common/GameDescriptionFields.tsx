@@ -1,15 +1,12 @@
 import { TextField, FormHelperText } from '@mui/material';
-import type { UseFormRegister, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
-interface GameDescriptionFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+interface GameDescriptionFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 }
 
-const getErrorMessage = (error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>) =>
-  typeof error?.message === 'string' ? error.message : undefined;
-
-function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps) {
+function GameDescriptionFields<T extends FieldValues>({ register, errors }: GameDescriptionFieldsProps<T>) {
   return (
     <>
       <TextField
@@ -19,7 +16,7 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
         label="Short Description *"
         helperText="Maximum 150 characters"
         error={!!errors.shortDescription}
-        {...register('shortDescription', {
+        {...register('shortDescription' as Path<T>, {
           required: 'Short description is required',
           maxLength: {
             value: 150,
@@ -29,7 +26,7 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
       />
       {errors.shortDescription && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {getErrorMessage(errors.shortDescription)}
+          {errors.shortDescription.message?.toString()}
         </FormHelperText>
       )}
 
@@ -39,11 +36,11 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
         rows={5}
         label="Full Description *"
         error={!!errors.description}
-        {...register('description', { required: 'Full description is required' })}
+        {...register('description' as Path<T>, { required: 'Full description is required' })}
       />
       {errors.description && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {getErrorMessage(errors.description)}
+          {errors.description.message?.toString()}
         </FormHelperText>
       )}
 
@@ -53,11 +50,11 @@ function GameDescriptionFields({ register, errors }: GameDescriptionFieldsProps)
         rows={5}
         label="Rules & Instructions *"
         error={!!errors.rules}
-        {...register('rules', { required: 'Rules are required' })}
+        {...register('rules' as Path<T>, { required: 'Rules are required' })}
       />
       {errors.rules && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {getErrorMessage(errors.rules)}
+          {errors.rules.message?.toString()}
         </FormHelperText>
       )}
     </>

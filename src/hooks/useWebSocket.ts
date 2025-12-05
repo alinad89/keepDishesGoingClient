@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
-import type { IMessage, IFrame, StompSubscription } from "@stomp/stompjs";
+import type { StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import type { ChatMessage } from "../types/api";
 
@@ -33,6 +33,7 @@ export function useWebSocket({
     const subscriptionRef = useRef<StompSubscription | null>(null);
     const reconnectTimeoutRef = useRef<number | null>(null);
     const reconnectAttemptsRef = useRef(0);
+    const connectRef = useRef<(() => void) | null>(null);
 
     const onMessageRef = useRef(onMessage);
     const onErrorRef = useRef(onError);
@@ -61,7 +62,7 @@ export function useWebSocket({
         // Create STOMP client with SockJS
         const client = new Client({
             webSocketFactory: () => new SockJS(WS_BASE_URL + '/ws'),
-            debug: (str: string) => {
+            debug: (str) => {
                 console.log('[STOMP Debug]', str);
             },
             reconnectDelay: RECONNECT_DELAY,
@@ -69,7 +70,7 @@ export function useWebSocket({
             heartbeatOutgoing: 4000,
         });
 
-        client.onConnect = (frame: IFrame) => {
+        client.onConnect = (frame) => {
             console.log('[WebSocket] Connected to STOMP broker', frame);
             setIsConnected(true);
             setError(null);
@@ -79,7 +80,7 @@ export function useWebSocket({
             const destination = `/ws/chats/${chatId}`;
             console.log('[WebSocket] Subscribing to:', destination);
 
-            subscriptionRef.current = client.subscribe(destination, (message: IMessage) => {
+            subscriptionRef.current = client.subscribe(destination, (message) => {
                 console.log('[WebSocket] Message received:', message.body);
                 try {
                     const messageData = JSON.parse(message.body);
@@ -101,14 +102,14 @@ export function useWebSocket({
             });
         };
 
-        client.onStompError = (frame: IFrame) => {
+        client.onStompError = (frame) => {
             console.error('[WebSocket] STOMP error:', frame);
             setError('WebSocket connection error');
             setIsConnected(false);
             onErrorRef.current?.(new Event('error'));
         };
 
-        client.onWebSocketClose = (event: CloseEvent) => {
+        client.onWebSocketClose = (event) => {
             console.log('[WebSocket] Connection closed:', event);
             setIsConnected(false);
             subscriptionRef.current = null;
@@ -125,12 +126,12 @@ export function useWebSocket({
                 );
 
                 reconnectTimeoutRef.current = window.setTimeout(() => {
-                    connect();
+                    connectRef.current?.();
                 }, RECONNECT_DELAY * attempt);
             }
         };
 
-        client.onWebSocketError = (event: Event) => {
+        client.onWebSocketError = (event) => {
             console.error('[WebSocket] WebSocket error:', event);
             setError('WebSocket connection error');
             onErrorRef.current?.(event as Event);
@@ -139,6 +140,11 @@ export function useWebSocket({
         client.activate();
         clientRef.current = client;
     }, [enabled, chatId]);
+
+    // Update connectRef whenever connect changes
+    useEffect(() => {
+        connectRef.current = connect;
+    }, [connect]);
 
     const disconnect = useCallback(() => {
         if (reconnectTimeoutRef.current !== null) {
@@ -166,8 +172,6 @@ export function useWebSocket({
     useEffect(() => {
         if (enabled && chatId) {
             connect();
-        } else {
-            disconnect();
         }
 
         // Cleanup on unmount or when dependencies change

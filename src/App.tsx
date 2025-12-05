@@ -12,39 +12,59 @@ import ManageGamesPage from './pages/ManageGamesPage'
 import GameDetailsPage from './pages/GameDetailsPage'
 import EditGamePage from './pages/EditGamePage'
 import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
+import AuthLanding from './pages/AuthLanding'
+import AuthCallback from './pages/AuthCallback'
+import { Protected } from './routes/Protected'
 import { ChatBox } from './components/ChatBox'
 import './App.css'
 
 function App() {
+  // Note: User registration is now handled in AuthCallback page
+  // based on their role (developer vs player)
+
   return (
     <BrowserRouter>
       <div className="app">
         <Routes>
-          {/* Developer Dashboard Routes - With developer navbar */}
+          {/* Authentication Routes */}
+          <Route path="/auth" element={<AuthLanding />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+
+          {/* Developer Dashboard Routes - Protected with authentication */}
           <Route path="/developer/dashboard" element={
-            <DeveloperDashboardLayout>
-              <DeveloperDashboardPage />
-            </DeveloperDashboardLayout>
+            <Protected>
+              <DeveloperDashboardLayout>
+                <DeveloperDashboardPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games" element={
-            <DeveloperDashboardLayout>
-              <ManageGamesPage />
-            </DeveloperDashboardLayout>
+            <Protected>
+              <DeveloperDashboardLayout>
+                <ManageGamesPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games/new" element={
-            <DeveloperDashboardLayout>
-              <CreateGamePage />
-            </DeveloperDashboardLayout>
+            <Protected>
+              <DeveloperDashboardLayout>
+                <CreateGamePage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games/:id" element={
-            <DeveloperDashboardLayout>
-              <GameDetailsPage />
-            </DeveloperDashboardLayout>
+            <Protected>
+              <DeveloperDashboardLayout>
+                <GameDetailsPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games/:id/edit" element={
-            <DeveloperDashboardLayout>
-              <EditGamePage />
-            </DeveloperDashboardLayout>
+            <Protected>
+              <DeveloperDashboardLayout>
+                <EditGamePage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
 
           {/* Main App Routes - With main navbar */}

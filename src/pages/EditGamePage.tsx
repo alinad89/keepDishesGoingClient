@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Alert, Button as MuiButton } from '@mui/material';
-import { useGame, useUpdateGame } from '../hooks/useGames';
+import { useGame } from '../hooks/useGames';
 
 function EditGamePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { game, loading: loadingGame, error: loadError } = useGame(id);
-  const { loading: updating } = useUpdateGame();
+  const updating = false; // TODO: Implement update functionality
 
   if (loadingGame) {
     return (

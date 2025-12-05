@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import './Navbar.css'
 import './DeveloperNavbar.css'
 
 function DeveloperNavbar() {
+  const { username, userEmail, logout, accountManagement } = useAuth()
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
@@ -24,6 +27,41 @@ function DeveloperNavbar() {
               </Link>
             </li>
           </ul>
+
+          {/* User Info and Auth Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '24px' }}>
+            <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>
+              {username || userEmail || 'User'}
+            </span>
+            <button
+              onClick={accountManagement}
+              style={{
+                padding: '8px 16px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '4px',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              Account
+            </button>
+            <button
+              onClick={logout}
+              style={{
+                padding: '8px 16px',
+                background: '#f44336',
+                border: 'none',
+                borderRadius: '4px',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              Log Out
+            </button>
+          </div>
         </div>
       </div>
     </nav>

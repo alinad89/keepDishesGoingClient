@@ -1,28 +1,23 @@
 import { TextField, FormHelperText } from '@mui/material';
-import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
-interface CreateGameFormData {
-  name: string;
-  version: string;
+interface GameBasicInfoFieldsProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
 }
 
-interface GameBasicInfoFieldsProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<CreateGameFormData>;
-}
-
-function GameBasicInfoFields({ register, errors }: GameBasicInfoFieldsProps) {
+function GameBasicInfoFields<T extends FieldValues>({ register, errors }: GameBasicInfoFieldsProps<T>) {
   return (
     <>
       <TextField
         fullWidth
         label="Game Name *"
         error={!!errors.name}
-        {...register('name', { required: 'Game name is required' })}
+        {...register('name' as Path<T>, { required: 'Game name is required' })}
       />
       {errors.name && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.name.message}
+          {errors.name.message?.toString()}
         </FormHelperText>
       )}
 
@@ -30,11 +25,11 @@ function GameBasicInfoFields({ register, errors }: GameBasicInfoFieldsProps) {
         fullWidth
         label="Version *"
         error={!!errors.version}
-        {...register('version', { required: 'Version is required' })}
+        {...register('version' as Path<T>, { required: 'Version is required' })}
       />
       {errors.version && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.version.message}
+          {errors.version.message?.toString()}
         </FormHelperText>
       )}
     </>
