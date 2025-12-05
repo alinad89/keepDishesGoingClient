@@ -16,7 +16,7 @@ import keycloak from '../keycloak';
  */
 
 // Base URL for API requests from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8082/api';
 
 // Create Axios instance
 const http: AxiosInstance = axios.create({
