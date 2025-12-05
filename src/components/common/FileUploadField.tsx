@@ -1,5 +1,5 @@
 import { Box, Typography, FormHelperText, styled } from '@mui/material';
-import type { UseFormRegisterReturn, FieldError } from 'react-hook-form';
+import type { UseFormRegisterReturn, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 const FileInput = styled('input')({
   padding: '1rem',
@@ -44,11 +44,13 @@ interface FileUploadFieldProps {
   label: string;
   helperText?: string;
   accept?: string;
-  error?: FieldError;
+  error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
   registration: UseFormRegisterReturn;
 }
 
 function FileUploadField({ label, helperText, accept, error, registration }: FileUploadFieldProps) {
+  const errorMessage = typeof error?.message === 'string' ? error.message : undefined;
+
   return (
     <Box>
       <Typography
@@ -77,7 +79,7 @@ function FileUploadField({ label, helperText, accept, error, registration }: Fil
           {helperText}
         </Typography>
       )}
-      {error && <FormHelperText error>{error.message}</FormHelperText>}
+      {errorMessage && <FormHelperText error>{errorMessage}</FormHelperText>}
     </Box>
   );
 }
