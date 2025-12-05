@@ -1,37 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Alert, Button as MuiButton } from '@mui/material';
-import { useGame, useUpdateGame } from '../hooks/useGames';
-import { CreateGameForm } from '../components/CreateGameForm';
-import type { CreateGameRequest } from '../types/api';
+import { Box, CircularProgress, Alert, Button as MuiButton } from '@mui/material';
+import { useGame } from '../hooks/useGames';
 
 function EditGamePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { game, loading: loadingGame, error: loadError } = useGame(id);
-  const { updateGameAsync, loading: updating } = useUpdateGame();
-
-  const handleUpdate = async (data: CreateGameRequest) => {
-    if (!id) return;
-
-    try {
-      // Convert CreateGameRequest to UpdateGameRequest
-      await updateGameAsync(id, {
-        description: data.description,
-        thumbnail: data.thumbnail,
-        coverImage: data.coverImage,
-        rules: data.rules,
-        shortDescription: data.shortDescription,
-        tags: data.tags,
-        version: data.version,
-        backendFiles: data.backendFiles,
-        frontendFiles: data.frontendFiles,
-      });
-      alert(`Game "${data.name}" updated successfully`);
-      navigate('/developer/games');
-    } catch (err) {
-      console.error('Failed to update game:', err);
-    }
-  };
+  const updating = false; // TODO: Implement update functionality
 
   if (loadingGame) {
     return (

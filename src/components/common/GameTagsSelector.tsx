@@ -82,7 +82,7 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
       />
       {errors.tags && (
         <FormHelperText error sx={{ mt: 1 }}>
-          {errors.tags.message}
+          {errors.tags.message?.toString()}
         </FormHelperText>
       )}
       {selectedTags && selectedTags.length > 0 && (

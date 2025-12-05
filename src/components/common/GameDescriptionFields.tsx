@@ -1,5 +1,5 @@
 import { TextField, FormHelperText } from '@mui/material';
-import type { UseFormRegister, FieldErrors, FieldValues } from 'react-hook-form';
+import type { UseFormRegister, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 interface GameDescriptionFieldsProps<T extends FieldValues> {
   register: UseFormRegister<T>;
@@ -16,7 +16,7 @@ function GameDescriptionFields<T extends FieldValues>({ register, errors }: Game
         label="Short Description *"
         helperText="Maximum 150 characters"
         error={!!errors.shortDescription}
-        {...register('shortDescription', {
+        {...register('shortDescription' as Path<T>, {
           required: 'Short description is required',
           maxLength: {
             value: 150,
@@ -26,7 +26,7 @@ function GameDescriptionFields<T extends FieldValues>({ register, errors }: Game
       />
       {errors.shortDescription && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.shortDescription.message}
+          {errors.shortDescription.message?.toString()}
         </FormHelperText>
       )}
 
@@ -36,11 +36,11 @@ function GameDescriptionFields<T extends FieldValues>({ register, errors }: Game
         rows={5}
         label="Full Description *"
         error={!!errors.description}
-        {...register('description', { required: 'Full description is required' })}
+        {...register('description' as Path<T>, { required: 'Full description is required' })}
       />
       {errors.description && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.description.message}
+          {errors.description.message?.toString()}
         </FormHelperText>
       )}
 
@@ -50,11 +50,11 @@ function GameDescriptionFields<T extends FieldValues>({ register, errors }: Game
         rows={5}
         label="Rules & Instructions *"
         error={!!errors.rules}
-        {...register('rules', { required: 'Rules are required' })}
+        {...register('rules' as Path<T>, { required: 'Rules are required' })}
       />
       {errors.rules && (
         <FormHelperText error sx={{ mt: -1 }}>
-          {errors.rules.message}
+          {errors.rules.message?.toString()}
         </FormHelperText>
       )}
     </>
