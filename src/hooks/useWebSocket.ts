@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
+import type { StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import type { ChatMessage } from "../types/api";
 
@@ -29,7 +30,7 @@ export function useWebSocket({
     const [error, setError] = useState<string | null>(null);
 
     const clientRef = useRef<Client | null>(null);
-    const subscriptionRef = useRef<any>(null); // StompSubscription type
+    const subscriptionRef = useRef<StompSubscription | null>(null);
     const reconnectTimeoutRef = useRef<number | null>(null);
     const reconnectAttemptsRef = useRef(0);
 

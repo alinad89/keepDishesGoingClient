@@ -299,7 +299,7 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
 
 export async function apiPost<T>(
   endpoint: string,
-  body?: any
+  body?: unknown
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
     method: 'POST',
@@ -309,7 +309,7 @@ export async function apiPost<T>(
 
 export async function apiPatch<T>(
   endpoint: string,
-  body?: any
+  body?: unknown
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
     method: 'PATCH',

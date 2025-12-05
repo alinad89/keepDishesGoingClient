@@ -1,6 +1,6 @@
 import { Box, Typography, Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import type { Control, FieldErrors } from 'react-hook-form';
+import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
 
 const GAME_TAGS = [
   'STRATEGY',
@@ -25,13 +25,13 @@ const GAME_TAGS = [
   'BOARD',
 ];
 
-interface GameTagsSelectorProps {
-  control: Control<any>;
-  errors: FieldErrors<any>;
+interface GameTagsSelectorProps<T extends FieldValues = FieldValues> {
+  control: Control<T>;
+  errors: FieldErrors<T>;
   selectedTags: string[];
 }
 
-function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorProps) {
+function GameTagsSelector<T extends FieldValues = FieldValues>({ control, errors, selectedTags }: GameTagsSelectorProps<T>) {
   return (
     <Box>
       <Typography
@@ -47,7 +47,7 @@ function GameTagsSelector({ control, errors, selectedTags }: GameTagsSelectorPro
         Select Tags
       </Typography>
       <Controller
-        name="tags"
+        name={"tags" as Path<T>}
         control={control}
         render={({ field }) => (
           <Box
