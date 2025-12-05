@@ -33,6 +33,7 @@ export function useWebSocket({
     const subscriptionRef = useRef<StompSubscription | null>(null);
     const reconnectTimeoutRef = useRef<number | null>(null);
     const reconnectAttemptsRef = useRef(0);
+    const connectRef = useRef<(() => void) | null>(null);
 
     const onMessageRef = useRef(onMessage);
     const onErrorRef = useRef(onError);
@@ -125,7 +126,7 @@ export function useWebSocket({
                 );
 
                 reconnectTimeoutRef.current = window.setTimeout(() => {
-                    connect();
+                    connectRef.current?.();
                 }, RECONNECT_DELAY * attempt);
             }
         };
@@ -139,6 +140,11 @@ export function useWebSocket({
         client.activate();
         clientRef.current = client;
     }, [enabled, chatId]);
+
+    // Update connectRef whenever connect changes
+    useEffect(() => {
+        connectRef.current = connect;
+    }, [connect]);
 
     const disconnect = useCallback(() => {
         if (reconnectTimeoutRef.current !== null) {
@@ -166,8 +172,6 @@ export function useWebSocket({
     useEffect(() => {
         if (enabled && chatId) {
             connect();
-        } else {
-            disconnect();
         }
 
         // Cleanup on unmount or when dependencies change
