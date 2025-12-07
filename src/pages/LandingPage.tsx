@@ -14,11 +14,11 @@ function LandingPage() {
                             Whether you&apos;re a player or a developer, we&apos;ve got you covered.
                         </p>
                         <div className="cta-buttons">
-                            <Link to="/games">
-                                <Button variant="primary">Explore Games</Button>
+                            <Link to="/auth">
+                                <Button variant="primary">Get Started</Button>
                             </Link>
-                            <Link to="/lobby">
-                                <Button variant="secondary">Join a Lobby</Button>
+                            <Link to="/games">
+                                <Button variant="secondary">Explore Games</Button>
                             </Link>
                         </div>
                     </div>
