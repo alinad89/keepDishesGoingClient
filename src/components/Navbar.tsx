@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useKeycloak } from '@react-keycloak/web'
+import { useMyLobbyInvitations } from '../hooks/useLobbies'
 import './Navbar.css'
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const { keycloak, initialized } = useKeycloak()
+  const { invitations } = useMyLobbyInvitations()
 
   useEffect(() => {
     // Always set dark mode
@@ -21,20 +23,19 @@ function Navbar() {
     setMenuOpen(false)
   }
 
+  // Only show invitation badge when user is authenticated
+  const invitationCount = keycloak.authenticated ? invitations.length : 0
+
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
     { path: '/lobby', label: 'Lobby' },
+    { path: '/invitations', label: 'My Invitations', badge: invitationCount > 0 ? invitationCount : undefined },
     { path: '/friends', label: 'Friends' },
     { path: '/achievements', label: 'Achievements' },
     { path: '/developer', label: 'Developers' },
   ]
 
-  const handleLogin = () => {
-    // Redirect to auth callback with player role
-    const redirectUri = `${window.location.origin}/auth/callback?role=player`
-    keycloak.login({ redirectUri })
-  }
 
   const handleLogout = () => {
     const redirectUri = window.location.origin
@@ -63,8 +64,28 @@ function Navbar() {
                   to={link.path}
                   className={location.pathname === link.path ? 'active' : ''}
                   onClick={closeMenu}
+                  style={{ position: 'relative', display: 'inline-block' }}
                 >
                   {link.label}
+                  {link.badge && link.badge > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      right: '-12px',
+                      background: 'var(--accent)',
+                      color: 'var(--bg)',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold'
+                    }}>
+                      {link.badge}
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}
@@ -84,9 +105,11 @@ function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  <button onClick={handleLogin} className="btn-login">
-                    Login
-                  </button>
+                  <Link to="/auth">
+                    <button className="btn-login">
+                      Login
+                    </button>
+                  </Link>
                 )}
               </>
             )}

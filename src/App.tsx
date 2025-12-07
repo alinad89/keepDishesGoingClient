@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import LandingPage from './pages/LandingPage'
 import GamesPage from './pages/GamesPage'
 import LobbyPage from './pages/LobbyPage'
+import InvitationsPage from './pages/InvitationsPage'
 import FriendsPage from './pages/FriendsPage'
 import AchievementsPage from './pages/AchievementsPage'
 import DeveloperPage from './pages/DeveloperPage'
@@ -76,6 +77,7 @@ function App() {
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/lobby" element={<LobbyPage />} />
+                  <Route path="/invitations" element={<InvitationsPage />} />
                   <Route path="/friends" element={<FriendsPage />} />
                   <Route path="/achievements" element={<AchievementsPage />} />
                   <Route path="/developer" element={<DeveloperPage />} />

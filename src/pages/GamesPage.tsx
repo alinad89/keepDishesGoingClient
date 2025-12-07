@@ -41,6 +41,9 @@ function GamesPage() {
 
   const filteredGames = apiGames
     .filter(game => {
+      // Only show ONLINE games to players
+      const isOnline = game.status === 'ONLINE';
+
       // Apply search filter
       const matchesSearch =
         game.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,7 +54,7 @@ function GamesPage() {
         activeFilter === 'all' ||
         (activeFilter === 'favourites' && favourites.has(game.id))
 
-      return matchesSearch && matchesFilter
+      return isOnline && matchesSearch && matchesFilter
     })
 
   if (loading) {
