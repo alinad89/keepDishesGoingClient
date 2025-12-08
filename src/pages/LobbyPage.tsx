@@ -16,12 +16,13 @@ import {
   useAllPlayers,
 } from '../hooks/useLobbies';
 import { useAuth } from '../hooks/useAuth';
+import { useGameSessionWebSocket, type ExternalSessionMessage } from '../hooks/useGameSessionWebSocket';
 
 function LobbyPage() {
   const { games, loading: gamesLoading } = useGames();
   const { createLobbyAsync, loading: creatingLobby, error: lobbyError } = useCreateLobby();
   const { registerPlayerAsync } = useRegisterPlayer();
-  const { lobby, loading: lobbyLoading, error: lobbyFetchError } = useMyLobby();
+  const { lobby, loading: lobbyLoading, error: lobbyFetchError, refetch: refetchLobby } = useMyLobby();
   const { invitations } = useMyLobbyInvitations();
   const { acceptInvitationAsync, loading: acceptingInvitation } = useAcceptLobbyInvitation();
   const { sendInvitationAsync, loading: sendingInvitation } = useSendLobbyInvitation();
@@ -51,6 +52,10 @@ function LobbyPage() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showGameStartedModal, setShowGameStartedModal] = useState(false);
   const [showJoinedLobbyModal, setShowJoinedLobbyModal] = useState(false);
+  const [waitingForSession, setWaitingForSession] = useState(false);
+  const [sessionLink, setSessionLink] = useState<string | null>(null);
+  const [externalSession, setExternalSession] = useState<ExternalSessionMessage | null>(null);
+  const [sessionSocketError, setSessionSocketError] = useState<string | null>(null);
 
   const previousLobbyStatusRef = useRef<string | null>(null);
   const playerRegistrationAttempted = useRef(false);
@@ -64,6 +69,23 @@ function LobbyPage() {
       });
     }
   }, [isAuthenticated, registerPlayerAsync]);
+
+  useEffect(() => {
+    if (!lobby) {
+      setSessionLink(null);
+      setExternalSession(null);
+      setWaitingForSession(false);
+      return;
+    }
+
+    setSessionLink(lobby.gameSessionLink || null);
+  }, [lobby?.lobbyId]);
+
+  useEffect(() => {
+    if (lobby?.gameSessionLink) {
+      setSessionLink(lobby.gameSessionLink);
+    }
+  }, [lobby?.gameSessionLink]);
 
   // Show modal when user first joins a lobby as non-owner
   useEffect(() => {
@@ -85,6 +107,38 @@ function LobbyPage() {
 
     previousLobbyStatusRef.current = lobby.status;
   }, [lobby?.status, lobby?.isOwner]);
+
+  useEffect(() => {
+    if (lobby && !lobby.isOwner && (externalSession || sessionLink)) {
+      setShowGameStartedModal(true);
+    }
+  }, [externalSession, lobby?.isOwner, lobby?.lobbyId, sessionLink]);
+
+  const { isConnected: sessionSocketConnected } = useGameSessionWebSocket({
+    enabled: Boolean(lobby?.lobbyId),
+    lobbyId: lobby?.lobbyId || null,
+    onSessionLink: (link: string) => {
+      setSessionSocketError(null);
+      setExternalSession(null);
+      setSessionLink(link);
+      setWaitingForSession(false);
+      refetchLobby();
+    },
+    onExternalSession: (payload: ExternalSessionMessage) => {
+      setSessionSocketError(null);
+      setSessionLink(null);
+      setExternalSession(payload);
+      setWaitingForSession(false);
+      refetchLobby();
+    },
+    onFinished: () => {
+      setWaitingForSession(false);
+      setExternalSession(null);
+      setSessionLink(null);
+      refetchLobby();
+    },
+    onError: (message) => setSessionSocketError(message),
+  });
 
   const handleCreateLobby = async (gameId: string) => {
     if (!isAuthenticated) {
@@ -132,9 +186,14 @@ function LobbyPage() {
 
   const handleStartGame = async () => {
     try {
+      setWaitingForSession(true);
+      setSessionSocketError(null);
+      setSessionLink(null);
+      setExternalSession(null);
       await changeLobbyStatusAsync({ action: 'START_GAME' });
     } catch (error) {
       const apiError = error as any;
+      setWaitingForSession(false);
       alert(`Failed to start game: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
@@ -185,8 +244,54 @@ function LobbyPage() {
 
   // Show active lobby if player is in one
   if (lobby) {
-    const isGameStarted = lobby.status === 'IN_GAME';
+    const sessionLinkToUse = sessionLink || lobby.gameSessionLink || null;
+    const hasSessionInfo = Boolean(sessionLinkToUse || externalSession);
+    const isGameStarted = lobby.status === 'IN_GAME' || hasSessionInfo;
     const isOwner = lobby.isOwner;
+
+    if (waitingForSession) {
+      return (
+        <PageContainer>
+          <Section
+            title={`Starting ${lobby.game.name}`}
+            subtitle="Preparing your game session..."
+            centered
+          >
+            <div style={{
+              padding: '2rem',
+              background: 'var(--card-bg)',
+              borderRadius: '12px',
+              border: '2px dashed var(--accent)',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Waiting for the game session details to arrive...
+              </p>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                WebSocket status: {sessionSocketConnected ? 'connected' : 'connecting...'}
+              </p>
+              {sessionSocketError && (
+                <p style={{ color: '#ff6666' }}>
+                  {sessionSocketError}
+                </p>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <Button
+                  variant="secondary"
+                  onClick={handleLeaveLobby}
+                  disabled={leavingLobby}
+                >
+                  {leavingLobby ? 'Leaving...' : 'Leave Lobby'}
+                </Button>
+              </div>
+            </div>
+          </Section>
+        </PageContainer>
+      );
+    }
 
     return (
       <PageContainer>
@@ -202,31 +307,26 @@ function LobbyPage() {
             maxWidth: '600px',
             margin: '0 auto'
           }}>
-            {/* Game Started - Owner View */}
-            {isGameStarted && isOwner && lobby.gameSessionLink && (
+            {externalSession && (
               <div style={{
                 padding: '2rem',
                 background: 'var(--card-bg)',
                 border: '2px solid var(--accent)',
                 borderRadius: '8px'
               }}>
-                <h3 style={{ marginBottom: '1.5rem', color: 'var(--accent)' }}>
-                  Game Started!
+                <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>
+                  Game Session Ready
                 </h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  To play this game one of you should use the link, then copy and paste both userIds inside the game before starting
+                </p>
 
-                {/* Game Link */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                    Game Session Link:
-                  </p>
-                  <div style={{
-                    display: 'flex',
-                    gap: '0.5rem',
-                    alignItems: 'center'
-                  }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ minWidth: '80px', color: 'var(--text-secondary)' }}>User ID 1</span>
                     <input
                       type="text"
-                      value={lobby.gameSessionLink}
+                      value={externalSession.playerId1}
                       readOnly
                       style={{
                         flex: 1,
@@ -240,139 +340,161 @@ function LobbyPage() {
                     />
                     <Button
                       variant="primary"
-                      onClick={() => handleCopy(lobby.gameSessionLink!, 'link')}
+                      onClick={() => handleCopy(externalSession.playerId1, 'externalPlayer1')}
                     >
-                      {copiedField === 'link' ? 'Copied!' : 'Copy'}
+                      {copiedField === 'externalPlayer1' ? 'Copied!' : 'Copy'}
+                    </Button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ minWidth: '80px', color: 'var(--text-secondary)' }}>User ID 2</span>
+                    <input
+                      type="text"
+                      value={externalSession.playerId2}
+                      readOnly
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'var(--bg)',
+                        border: '1px solid var(--card-border)',
+                        borderRadius: '4px',
+                        color: 'var(--text)',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                    <Button
+                      variant="primary"
+                      onClick={() => handleCopy(externalSession.playerId2, 'externalPlayer2')}
+                    >
+                      {copiedField === 'externalPlayer2' ? 'Copied!' : 'Copy'}
                     </Button>
                   </div>
                 </div>
 
-                {/* Player IDs */}
-                {lobby.playerIds && lobby.playerIds.length > 0 && (
-                  <div>
-                    <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                      Player IDs:
-                    </p>
-                    {lobby.playerIds.map((playerId, index) => (
-                      <div
-                        key={playerId}
-                        style={{
-                          display: 'flex',
-                          gap: '0.5rem',
-                          alignItems: 'center',
-                          marginBottom: '0.5rem'
-                        }}
-                      >
-                        <input
-                          type="text"
-                          value={playerId}
-                          readOnly
-                          style={{
-                            flex: 1,
-                            padding: '0.75rem',
-                            background: 'var(--bg)',
-                            border: '1px solid var(--card-border)',
-                            borderRadius: '4px',
-                            color: 'var(--text)',
-                            fontFamily: 'monospace'
-                          }}
-                        />
-                        <Button
-                          variant="primary"
-                          onClick={() => handleCopy(playerId, `player${index}`)}
-                        >
-                          {copiedField === `player${index}` ? 'Copied!' : 'Copy'}
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <p style={{
-                  marginTop: '1.5rem',
-                  fontSize: '0.9rem',
-                  color: 'var(--text-secondary)',
-                  textAlign: 'center'
-                }}>
-                  Share the game link and player IDs with other players
-                </p>
+                <Button
+                  variant="primary"
+                  onClick={() => window.open(externalSession.url, '_blank')}
+                >
+                  Go to Game
+                </Button>
               </div>
             )}
 
-            {/* Game Started - Non-Owner View */}
-            {isGameStarted && !isOwner && (
-              <>
-                <div style={{
-                  padding: '2rem',
-                  background: 'var(--card-bg)',
-                  border: '2px solid var(--accent)',
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>
-                    Game Started!
-                  </h3>
-                  <p style={{ color: 'var(--text-secondary)' }}>
-                    The lobby owner has received the game link and player IDs.
-                  </p>
-                  <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                    They will share the details with you to join the game.
-                  </p>
+            {!externalSession && sessionLinkToUse && (
+              <div style={{
+                padding: '2rem',
+                background: 'var(--card-bg)',
+                border: '2px solid var(--accent)',
+                borderRadius: '8px'
+              }}>
+                <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>
+                  Game Session Ready
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  Click start to jump into the match.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                  <Button
+                    variant="primary"
+                    onClick={() => window.location.href = sessionLinkToUse}
+                  >
+                    Start Game
+                  </Button>
                 </div>
 
-                {/* Modal notification */}
-                {showGameStartedModal && (
-                  <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                  }}>
+                {isOwner && (
+                  <>
+                    <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                      Share this session link with other players:
+                    </p>
                     <div style={{
-                      background: 'var(--card-bg)',
-                      border: '3px solid var(--accent)',
-                      borderRadius: '12px',
-                      padding: '2.5rem',
-                      maxWidth: '500px',
-                      textAlign: 'center',
-                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
+                      display: 'flex',
+                      gap: '0.5rem',
+                      alignItems: 'center',
+                      marginBottom: '1rem'
                     }}>
-                      <h2 style={{
-                        color: 'var(--accent)',
-                        marginBottom: '1.5rem',
-                        fontSize: '1.8rem'
-                      }}>
-                        Game Started!
-                      </h2>
-                      <p style={{
-                        color: 'var(--text)',
-                        marginBottom: '1rem',
-                        fontSize: '1.1rem'
-                      }}>
-                        The lobby owner has received the game link and player IDs that need to be copied.
-                      </p>
-                      <p style={{
-                        color: 'var(--text-secondary)',
-                        marginBottom: '2rem'
-                      }}>
-                        They will share these details with you so you can join the game.
-                      </p>
+                      <input
+                        type="text"
+                        value={sessionLinkToUse}
+                        readOnly
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--card-border)',
+                          borderRadius: '4px',
+                          color: 'var(--text)',
+                          fontFamily: 'monospace'
+                        }}
+                      />
                       <Button
                         variant="primary"
-                        onClick={() => setShowGameStartedModal(false)}
+                        onClick={() => handleCopy(sessionLinkToUse, 'link')}
                       >
-                        Got it!
+                        {copiedField === 'link' ? 'Copied!' : 'Copy'}
                       </Button>
                     </div>
-                  </div>
+
+                    {lobby.playerIds && lobby.playerIds.length > 0 && (
+                      <div>
+                        <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+                          Player IDs:
+                        </p>
+                        {lobby.playerIds.map((playerId, index) => (
+                          <div
+                            key={playerId}
+                            style={{
+                              display: 'flex',
+                              gap: '0.5rem',
+                              alignItems: 'center',
+                              marginBottom: '0.5rem'
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={playerId}
+                              readOnly
+                              style={{
+                                flex: 1,
+                                padding: '0.75rem',
+                                background: 'var(--bg)',
+                                border: '1px solid var(--card-border)',
+                                borderRadius: '4px',
+                                color: 'var(--text)',
+                                fontFamily: 'monospace'
+                              }}
+                            />
+                            <Button
+                              variant="primary"
+                              onClick={() => handleCopy(playerId, `player${index}`)}
+                            >
+                              {copiedField === `player${index}` ? 'Copied!' : 'Copy'}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
+              </div>
+            )}
+
+            {!externalSession && !sessionLinkToUse && isGameStarted && (
+              <div style={{
+                padding: '2rem',
+                background: 'var(--card-bg)',
+                border: '2px solid var(--accent)',
+                borderRadius: '8px',
+                textAlign: 'center'
+              }}>
+                <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>
+                  Game Started!
+                </h3>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  {isOwner
+                    ? 'Waiting for the session link to arrive from the server...'
+                    : 'The lobby owner will share the game link and player IDs with you shortly.'}
+                </p>
+              </div>
             )}
 
             {/* Waiting State */}
@@ -561,6 +683,58 @@ function LobbyPage() {
                   </div>
                 )}
               </>
+            )}
+
+            {!isOwner && showGameStartedModal && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+              }}>
+                <div style={{
+                  background: 'var(--card-bg)',
+                  border: '3px solid var(--accent)',
+                  borderRadius: '12px',
+                  padding: '2.5rem',
+                  maxWidth: '500px',
+                  textAlign: 'center',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
+                }}>
+                  <h2 style={{
+                    color: 'var(--accent)',
+                    marginBottom: '1.5rem',
+                    fontSize: '1.8rem'
+                  }}>
+                    Game Started!
+                  </h2>
+                  <p style={{
+                    color: 'var(--text)',
+                    marginBottom: '1rem',
+                    fontSize: '1.1rem'
+                  }}>
+                    The lobby owner has received the game link and player IDs that need to be copied.
+                  </p>
+                  <p style={{
+                    color: 'var(--text-secondary)',
+                    marginBottom: '2rem'
+                  }}>
+                    They will share these details with you so you can join the game.
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowGameStartedModal(false)}
+                  >
+                    Got it!
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </Section>
