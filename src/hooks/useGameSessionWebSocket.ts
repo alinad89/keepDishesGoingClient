@@ -64,11 +64,18 @@ export function useGameSessionWebSocket({
 
   const handleSessionMessage = useCallback((body: string) => {
     let parsedBody: unknown = body;
+    const trimmedBody = typeof body === 'string' ? body.trim() : '';
+    const looksLikeJson = trimmedBody.startsWith('{') || trimmedBody.startsWith('[');
 
-    try {
-      parsedBody = JSON.parse(body);
-    } catch {
-      parsedBody = body;
+    if (looksLikeJson) {
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (err) {
+        console.warn('[GameSessionWebSocket] Failed to parse JSON payload, using raw value', body, err);
+        parsedBody = body;
+      }
+    } else {
+      console.log('[GameSessionWebSocket] Received non-JSON payload', body);
     }
 
     if (
