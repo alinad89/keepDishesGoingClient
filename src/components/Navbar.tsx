@@ -26,6 +26,10 @@ function Navbar() {
   // Only show invitation badge when user is authenticated
   const invitationCount = keycloak.authenticated ? invitations.length : 0
 
+  // Check if user is admin or developer
+  const isAdmin = keycloak.authenticated && keycloak.hasRealmRole('admin')
+  const isDeveloper = keycloak.authenticated && keycloak.hasRealmRole('developer')
+
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
@@ -35,6 +39,11 @@ function Navbar() {
     { path: '/achievements', label: 'Achievements' },
     { path: '/developer', label: 'Developers' },
   ]
+
+  // Add Game Management link for admins and developers
+  if (isAdmin || isDeveloper) {
+    navLinks.push({ path: '/developer/games', label: isAdmin ? 'Manage Games (Admin)' : 'My Games' })
+  }
 
 
   const handleLogout = () => {

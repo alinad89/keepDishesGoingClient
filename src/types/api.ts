@@ -23,6 +23,15 @@ export interface RegisterDeveloperResponse {
   id: string;
 }
 
+// Administrator
+export interface Administrator {
+  id: string;
+}
+
+export interface RegisterAdministratorResponse {
+  id: string;
+}
+
 // Game status enum
 export type GameStatus =
   | 'IN_DEVELOPMENT'
@@ -85,9 +94,9 @@ export interface UpdateGameRequest {
 }
 
 export type GameStatusAction =
-  | 'MARK-READY-FOR-PUBLISHING'
-  | 'MARK-ONLINE'
-  | 'MARK-REJECTED';
+  | 'MARK_READY_FOR_PUBLISHING'
+  | 'MARK_ONLINE'
+  | 'MARK_REJECTED';
 
 export interface ChangeGameStatusRequest {
   id: string;

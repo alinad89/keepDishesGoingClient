@@ -33,35 +33,35 @@ function App() {
 
           {/* Developer Dashboard Routes - Protected with authentication */}
           <Route path="/developer/dashboard" element={
-            <Protected>
+            <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <DeveloperDashboardPage />
               </DeveloperDashboardLayout>
             </Protected>
           } />
           <Route path="/developer/games" element={
-            <Protected>
+            <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <ManageGamesPage />
               </DeveloperDashboardLayout>
             </Protected>
           } />
           <Route path="/developer/games/new" element={
-            <Protected>
+            <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <CreateGamePage />
               </DeveloperDashboardLayout>
             </Protected>
           } />
           <Route path="/developer/games/:id" element={
-            <Protected>
+            <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <GameDetailsPage />
               </DeveloperDashboardLayout>
             </Protected>
           } />
           <Route path="/developer/games/:id/edit" element={
-            <Protected>
+            <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <EditGamePage />
               </DeveloperDashboardLayout>

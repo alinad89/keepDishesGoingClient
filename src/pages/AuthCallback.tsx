@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useRegisterDeveloper } from '../hooks/useDevelopers';
+import { useRegisterAdministrator } from '../hooks/useAdministrators';
 import { isDeveloper, ROLES } from '../utils/keycloakRoles';
 
 // ========================================
@@ -32,8 +33,9 @@ export default function AuthCallback() {
   const error = searchParams.get('error') ||
     new URLSearchParams(window.location.hash.substring(1)).get('error');
 
-  // Use the hook to register developer in backend
+  // Use the hooks to register developer/admin in backend
   const { registerDeveloperAsync } = useRegisterDeveloper();
+  const { registerAdministratorAsync } = useRegisterAdministrator();
 
   useEffect(() => {
     console.log('[AuthCallback] State:', {
@@ -67,18 +69,38 @@ export default function AuthCallback() {
       return;
     }
 
-    // Check if user has developer role in Keycloak
+    // Check if user has developer or admin role in Keycloak
     const hasDeveloperRole = isDeveloper(keycloak);
+    const hasAdminRole = keycloak.hasRealmRole('admin');
 
-    // IMPORTANT: If user registered as developer but doesn't have the role yet,
+    // IMPORTANT: If user registered as developer/admin but doesn't have the role yet,
     // you'll need to handle role assignment in Keycloak first.
     // For now, we'll check both the intended role and actual role.
 
-    if (intendedRole === ROLES.DEVELOPER || hasDeveloperRole) {
-      // User is a developer - register in backend and redirect to dashboard
-      const syncKey = `user_synced_${keycloak.tokenParsed?.sub}`;
-      const alreadySynced = sessionStorage.getItem(syncKey);
+    const syncKey = `user_synced_${keycloak.tokenParsed?.sub}`;
+    const alreadySynced = sessionStorage.getItem(syncKey);
 
+    if (hasAdminRole) {
+      // User is an admin - register in backend and redirect to game management
+      if (!alreadySynced) {
+        console.log('[AuthCallback] Registering administrator in backend...');
+        registerAdministratorAsync()
+          .then((response) => {
+            console.log('[AuthCallback] Administrator registered:', response);
+            sessionStorage.setItem(syncKey, 'true');
+            navigate('/developer/games');
+          })
+          .catch((error) => {
+            console.error('[AuthCallback] Failed to register administrator:', error);
+            // Still redirect to game management, backend might already have the user
+            navigate('/developer/games');
+          });
+      } else {
+        // Already synced, just redirect
+        navigate('/developer/games');
+      }
+    } else if (intendedRole === ROLES.DEVELOPER || hasDeveloperRole) {
+      // User is a developer - register in backend and redirect to dashboard
       if (!alreadySynced) {
         console.log('[AuthCallback] Registering developer in backend...');
         registerDeveloperAsync()
@@ -101,7 +123,7 @@ export default function AuthCallback() {
       console.log('[AuthCallback] Player login, redirecting to games...');
       navigate('/games');
     }
-  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, navigate, error]);
+  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, navigate, error]);
 
   return (
     <Box

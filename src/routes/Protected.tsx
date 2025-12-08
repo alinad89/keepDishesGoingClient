@@ -26,7 +26,7 @@ import LockIcon from '@mui/icons-material/Lock';
 
 interface ProtectedProps {
   children: ReactNode;
-  requireRole?: string; // Optional: specify required role (defaults to 'developer')
+  requireRole?: string | string[]; // Optional: specify required role(s) (defaults to 'developer')
 }
 
 export function Protected({ children, requireRole = 'developer' }: ProtectedProps) {
@@ -82,11 +82,13 @@ export function Protected({ children, requireRole = 'developer' }: ProtectedProp
     );
   }
 
-  // Check if user has required role
-  const hasRequiredRole = keycloak.hasRealmRole(requireRole);
+  // Check if user has required role(s)
+  const roles = Array.isArray(requireRole) ? requireRole : [requireRole];
+  const hasRequiredRole = roles.some((role) => keycloak.hasRealmRole(role));
 
   if (!hasRequiredRole) {
     // User is authenticated but doesn't have the required role
+    const roleDisplay = roles.length === 1 ? roles[0] : roles.join(' or ');
     return (
       <Box
         sx={{
@@ -106,7 +108,7 @@ export function Protected({ children, requireRole = 'developer' }: ProtectedProp
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500 }}>
           You don't have the required permissions to access this area.
-          This section is only available to developers.
+          This section requires the {roleDisplay} role.
         </Typography>
         <Button
           variant="contained"

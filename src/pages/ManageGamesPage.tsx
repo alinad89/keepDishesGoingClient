@@ -22,6 +22,7 @@ import {
   type Game,
   type GameStatusAction,
 } from '../hooks/useGames';
+import { useAuth } from '../hooks/useAuth';
 import Button from '../components/Button';
 import FormCard from '../components/FormCard';
 
@@ -30,11 +31,12 @@ function ManageGamesPage() {
   const { games, loading, error, refetch } = useGames();
   const { deleteGameAsync, loading: deleting } = useDeleteGame();
   const { changeStatusAsync, loading: changingStatus } = useChangeGameStatus();
+  const { hasRealmRole } = useAuth();
 
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<GameStatusAction>('MARK-READY-FOR-PUBLISHING');
+  const [selectedStatus, setSelectedStatus] = useState<GameStatusAction>('MARK_READY_FOR_PUBLISHING');
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -62,6 +64,14 @@ function ManageGamesPage() {
     setSelectedGame(game);
     setStatusDialogOpen(true);
     setActionError(null);
+
+    // Set default status based on user role
+    const isAdmin = hasRealmRole('admin');
+    if (isAdmin) {
+      setSelectedStatus('MARK_ONLINE');
+    } else {
+      setSelectedStatus('MARK_READY_FOR_PUBLISHING');
+    }
   };
 
   const handleStatusChange = async () => {
@@ -146,6 +156,34 @@ function ManageGamesPage() {
                 {game.shortDescription}
               </Typography>
 
+              {/* Status Badge */}
+              {game.status && (
+                <Box sx={{ mb: 2 }}>
+                  <Chip
+                    label={game.status.replace(/_/g, ' ')}
+                    size="small"
+                    sx={{
+                      textTransform: 'capitalize',
+                      fontWeight: 'bold',
+                      backgroundColor:
+                        game.status === 'ONLINE'
+                          ? '#4caf50'
+                          : game.status === 'READY_FOR_PUBLISHING'
+                          ? '#ff9800'
+                          : game.status === 'REJECTED'
+                          ? '#f44336'
+                          : game.status === 'IN_DEVELOPMENT'
+                          ? '#2196f3'
+                          : '#9e9e9e',
+                      color: 'white',
+                      '& .MuiChip-label': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+
               {/* Tags */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                 {game.tags.map((tag) => (
@@ -227,6 +265,11 @@ function ManageGamesPage() {
           <Typography sx={{ mb: 2 }}>
             Change status for "{selectedGame?.name}"
           </Typography>
+          {selectedGame?.status && (
+            <Typography sx={{ mb: 2, fontSize: '0.875rem', color: 'text.secondary' }}>
+              Current status: <strong>{selectedGame.status}</strong>
+            </Typography>
+          )}
           <FormControl fullWidth>
             <InputLabel>Status Action</InputLabel>
             <Select
@@ -234,9 +277,15 @@ function ManageGamesPage() {
               label="Status Action"
               onChange={(e) => setSelectedStatus(e.target.value as GameStatusAction)}
             >
-              <MenuItem value="MARK-READY-FOR-PUBLISHING">Mark Ready for Publishing</MenuItem>
-              <MenuItem value="MARK-ONLINE">Mark Online (Admin)</MenuItem>
-              <MenuItem value="MARK-REJECTED">Mark Rejected (Admin)</MenuItem>
+              {hasRealmRole('developer') && (
+                <MenuItem value="MARK_READY_FOR_PUBLISHING">Mark Ready for Publishing</MenuItem>
+              )}
+              {hasRealmRole('admin') && (
+                <MenuItem value="MARK_ONLINE">Mark Online</MenuItem>
+              )}
+              {hasRealmRole('admin') && (
+                <MenuItem value="MARK_REJECTED">Reject Game</MenuItem>
+              )}
             </Select>
           </FormControl>
           {actionError && (

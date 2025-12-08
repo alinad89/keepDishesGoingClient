@@ -21,6 +21,10 @@ export const DEVELOPER_ENDPOINTS = {
     USE_MOCK_API ? `/achievements/${achId}` : `/games/${gameId}/achievements/${achId}`,
 } as const;
 
+export const ADMIN_ENDPOINTS = {
+  register: '/admins',
+} as const;
+
 
 export const CHATBOT_ENDPOINTS = {
   platformInfo: '/platform/info',
