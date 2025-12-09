@@ -1,6 +1,7 @@
 import type {ButtonHTMLAttributes} from 'react'
 import { Box } from '@mui/material'
 import { keyframes } from '@mui/system'
+import type { Theme } from '@mui/material/styles'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'small'
@@ -16,7 +17,7 @@ const shimmer = keyframes`
   }
 `
 
-const buttonBaseStyles = (theme: any) => ({
+const buttonBaseStyles = (theme: Theme) => ({
   border: 'none',
   cursor: 'pointer',
   fontWeight: 200,
@@ -47,7 +48,7 @@ const buttonBaseStyles = (theme: any) => ({
 })
 
 const variantStyles = {
-  primary: (theme: any) => ({
+  primary: (theme: Theme) => ({
     ...buttonBaseStyles(theme),
     padding: '1rem 2rem',
     background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
@@ -61,7 +62,7 @@ const variantStyles = {
       transform: 'translateY(-1px) scale(1)',
     },
   }),
-  secondary: (theme: any) => ({
+  secondary: (theme: Theme) => ({
     ...buttonBaseStyles(theme),
     padding: '1rem 2rem',
     background: theme.palette.background.paper,
@@ -76,7 +77,7 @@ const variantStyles = {
       transform: 'translateY(-1px) scale(1)',
     },
   }),
-  small: (theme: any) => ({
+  small: (theme: Theme) => ({
     ...buttonBaseStyles(theme),
     padding: '0.5rem 1.25rem',
     fontSize: '0.85rem',
@@ -91,7 +92,7 @@ const variantStyles = {
       transform: 'translateY(-1px) scale(1)',
     },
   }),
-  outline: (theme: any) => ({
+  outline: (theme: Theme) => ({
     ...buttonBaseStyles(theme),
     padding: '1rem 2rem',
     background: 'transparent',
