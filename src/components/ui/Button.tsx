@@ -109,14 +109,12 @@ const variantStyles = {
   }),
 }
 
-function Button({ variant = 'primary', children, className = '', ...props }: ButtonProps) {
+function Button({ variant = 'primary', children, className, ...props }: ButtonProps) {
   return (
     <Box
       component="button"
-      sx={(theme) => ({
-        ...variantStyles[variant](theme),
-        ...(className && { className }),
-      })}
+      className={className}
+      sx={(theme) => variantStyles[variant](theme)}
       {...props}
     >
       {children}
