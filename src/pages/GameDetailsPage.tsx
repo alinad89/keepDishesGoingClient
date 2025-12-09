@@ -72,7 +72,7 @@ function GameDetailsPage() {
                             justifyContent: 'center',
                         }}
                     >
-                        {game.tags.map((tag) => (
+                        {game.tags.map((tag: string) => (
                             <Chip
                                 key={tag}
                                 label={tag.replace(/_/g, ' ')}

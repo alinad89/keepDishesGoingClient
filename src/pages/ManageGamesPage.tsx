@@ -184,7 +184,7 @@ function ManageGamesPage() {
 
               {/* Tags */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {game.tags.map((tag) => (
+                {game.tags.map((tag: string) => (
                   <Chip
                     key={tag}
                     label={tag.replace(/_/g, ' ')}
