@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { registerDeveloper } from '../api/developers';
-import type { RegisterDeveloperResponse } from '../types/api';
+import type { RegisterDeveloperResponse } from '../types/developer.types';
 import { ApiError } from '../api/config';
 
 /**

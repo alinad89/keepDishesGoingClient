@@ -1,14 +1,44 @@
 import { createTheme } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+  interface Theme {
+    customShadows: {
+      card: string;
+      button: string;
+      glow: string;
+    };
+    clipPaths: {
+      button: string;
+      card: string;
+      navbar: string;
+      input: string;
+      badge: string;
+    };
+  }
+  interface ThemeOptions {
+    customShadows?: {
+      card?: string;
+      button?: string;
+      glow?: string;
+    };
+    clipPaths?: {
+      button?: string;
+      card?: string;
+      navbar?: string;
+      input?: string;
+      badge?: string;
+    };
+  }
+}
+
 // Create MUI theme matching the existing Hexagon design system
-// Using dark theme colors from App.css
 export const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#A855FF', // --accent for dark mode
-      light: '#E879F9', // --accent-gradient-end
-      dark: '#7C3AED', // --hover-accent
+      main: '#A855FF',
+      light: '#E879F9',
+      dark: '#7C3AED',
     },
     secondary: {
       main: '#A855FF',
@@ -16,12 +46,12 @@ export const theme = createTheme({
       dark: '#7C3AED',
     },
     background: {
-      default: '#1A1D21', // --bg-color
-      paper: '#2A2E34', // --card-bg
+      default: '#111318',
+      paper: '#343A43',
     },
     text: {
-      primary: '#FFF6EF', // --text-color
-      secondary: '#B8C0DD', // --muted-text
+      primary: '#FFF6EF',
+      secondary: '#B8C0DD',
     },
     error: {
       main: '#ef4444',
@@ -29,7 +59,19 @@ export const theme = createTheme({
     success: {
       main: '#A855FF',
     },
-    divider: '#3A4570', // --card-border
+    divider: '#4C5A86',
+  },
+  customShadows: {
+    card: '0 8px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(168, 85, 255, 0.18)',
+    button: '0 4px 12px rgba(168, 85, 255, 0.45)',
+    glow: '0 0 20px rgba(168, 85, 255, 0.45)',
+  },
+  clipPaths: {
+    button: 'polygon(7% 0%, 92% 0%, 100% 50%, 92% 100%, 7% 100%, 0% 50%)',
+    card: 'polygon(3% 0%, 97% 0%, 100% 50%, 97% 100%, 3% 100%, 0% 50%)',
+    navbar: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)',
+    input: 'polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%)',
+    badge: 'polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)',
   },
   typography: {
     fontFamily: "'Gertika', sans-serif",
@@ -92,17 +134,17 @@ export const theme = createTheme({
   components: {
     MuiCard: {
       styleOverrides: {
-        root: {
-          background: 'linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%)',
-          boxShadow: '0 8px 25px var(--shadow-color), 0 0 20px var(--card-glow)',
-        },
+        root: ({ theme }) => ({
+          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+          boxShadow: theme.customShadows.card,
+        }),
       },
     },
     MuiTextField: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           '& .MuiOutlinedInput-root': {
-            background: 'var(--card-bg)',
+            background: theme.palette.background.paper,
             borderRadius: '4px',
             '& fieldset': {
               border: 'none',
@@ -112,62 +154,62 @@ export const theme = createTheme({
             },
             '&.Mui-focused fieldset': {
               border: 'none',
-              boxShadow: '0 0 20px var(--accent-glow)',
+              boxShadow: theme.customShadows.glow,
             },
           },
           '& .MuiInputLabel-root': {
-            color: 'var(--accent)',
+            color: theme.palette.primary.main,
             fontWeight: 300,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             fontSize: '0.95rem',
           },
           '& .MuiInputBase-input': {
-            color: 'var(--text-color)',
+            color: theme.palette.text.primary,
           },
           '& .MuiFormHelperText-root': {
-            color: 'var(--muted-text)',
+            color: theme.palette.text.secondary,
           },
-        },
+        }),
       },
     },
     MuiCheckbox: {
       styleOverrides: {
-        root: {
-          color: 'var(--card-border)',
+        root: ({ theme }) => ({
+          color: theme.palette.divider,
           '&.Mui-checked': {
-            color: 'var(--accent)',
+            color: theme.palette.primary.main,
           },
-        },
+        }),
       },
     },
     MuiFormControlLabel: {
       styleOverrides: {
-        root: {
-          background: 'var(--card-bg)',
+        root: ({ theme }) => ({
+          background: theme.palette.background.paper,
           padding: '0.875rem 1rem',
           marginLeft: 0,
           marginRight: 0,
           borderRadius: '4px',
-          clipPath: 'var(--clip-shape-button)',
+          clipPath: theme.clipPaths.button,
           transition: 'all 0.3s ease',
           '&:hover': {
-            background: 'linear-gradient(135deg, var(--card-bg), var(--bg-color))',
+            background: `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.background.default})`,
             transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px var(--accent-glow)',
+            boxShadow: theme.customShadows.button,
           },
           '& .MuiCheckbox-root.Mui-checked ~ .MuiFormControlLabel-label': {
-            color: 'var(--accent)',
+            color: theme.palette.primary.main,
             fontWeight: 300,
           },
-        },
-        label: {
+        }),
+        label: ({ theme }) => ({
           fontWeight: 200,
           fontSize: '0.9rem',
           textTransform: 'capitalize',
           letterSpacing: '0.03em',
-          color: 'var(--text-color)',
-        },
+          color: theme.palette.text.primary,
+        }),
       },
     },
     MuiAlert: {

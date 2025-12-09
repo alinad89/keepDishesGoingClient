@@ -3,7 +3,7 @@ import type {
   CreateMessageResponse,
   ChatListItem,
   Chat,
-} from '../types/api';
+} from '../types/chat.types';
 import { CHATBOT_ENDPOINTS, apiPost, apiGet } from './config';
 
 /**

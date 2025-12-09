@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import type { StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type { ChatMessage } from "../types/api";
+import type { ChatMessage } from "../types/chat.types";
 
 interface WebSocketMessage {
     chatId: string;
