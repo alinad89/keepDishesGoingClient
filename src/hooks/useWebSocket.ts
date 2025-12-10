@@ -18,7 +18,7 @@ interface UseWebSocketOptions {
 
 // WebSocket base URL (without the /ws path - will be added by SockJS)
 const WS_BASE_URL =
-    import.meta.env.VITE_WS_BASE_URL || "http://localhost:8080";
+    import.meta.env.VITE_WS_BASE_URL || "http://localhost:8082";
 
 export function useWebSocket({
     enabled,
