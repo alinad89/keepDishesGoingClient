@@ -4,8 +4,12 @@ import { ChatBox } from './components/ChatBox'
 import { authRoutes, developerRoutes, publicRoutes } from './routes/routeConfig'
 import { renderAuthRoutes, renderDeveloperRoutes, renderPublicRoutes } from './routes/routeUtils'
 import './App.css'
+import InvitationsPage from "./pages/InvitationsPage.tsx";
 
 function App() {
+  // Note: User registration is now handled in AuthCallback page
+  // based on their role (developer vs player)
+
   return (
     <BrowserRouter>
       <div className="app">
@@ -23,6 +27,7 @@ function App() {
               <main className="main-container">
                 <Routes>
                   {renderPublicRoutes(publicRoutes)}
+                  <Route path="/invitations" element={<InvitationsPage />} />
                 </Routes>
               </main>
             </>

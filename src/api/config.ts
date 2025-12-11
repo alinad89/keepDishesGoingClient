@@ -28,6 +28,24 @@ export const CHATBOT_ENDPOINTS = {
   chatById: (id: string) => `/chats/${id}`,
 } as const;
 
+export const PLATFORM_ENDPOINTS = {
+  players: '/players',
+  allPlayers: '/players',
+  lobbies: '/lobbies',
+  myLobby: '/lobbies/me',
+  lobbyStatus: '/lobbies/me/status',
+} as const;
+
+export const SOCIAL_ENDPOINTS = {
+  lobbyInvitations: '/lobby-invitations',
+  myLobbyInvitations: '/lobby-invitations/me',
+  acceptLobbyInvitation: (id: string) => `/lobby-invitations/${id}/accepted`,
+  friendLists: '/friend-lists',
+  friendRequests: '/friend-requests',
+  myFriendRequests: '/friend-requests/me',
+  acceptFriendRequest: (id: string) => `/friend-requests/${id}/accepted`,
+} as const;
+
 
 //Get JWT token from Keycloak
 export function getAuthToken(): string | null {
