@@ -36,6 +36,7 @@ export interface Game {
   tags: string[];
   version: string;
   url: string;
+  status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
 export type DeploymentMode = 'url' | 'backend-zip';
