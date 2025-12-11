@@ -186,8 +186,9 @@ export async function apiFetch<T>(
       },
     });
 
-    // Handle 204 No Content
-    if (response.status === 204) {
+    // Handle 204 No Content and 202 Accepted (empty body)
+    // TODO: Backend should return 204 instead of 202 for consistency
+    if (response.status === 204 || response.status === 202) {
       return undefined as T;
     }
 
@@ -268,8 +269,9 @@ export async function apiUpload<T>(
       body: formData,
     });
 
-    // Handle 204 No Content
-    if (response.status === 204) {
+    // Handle 204 No Content and 202 Accepted (empty body)
+    // TODO: Backend should return 204 instead of 202 for consistency
+    if (response.status === 204 || response.status === 202) {
       return undefined as T;
     }
 
