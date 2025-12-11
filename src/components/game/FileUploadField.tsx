@@ -1,5 +1,5 @@
 import { Box, Typography, FormHelperText, styled } from '@mui/material';
-import type { UseFormRegisterReturn, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
+import type { UseFormRegisterReturn, FieldError, FieldErrorsImpl, Merge, FieldValues } from 'react-hook-form';
 
 const FileInput = styled('input')({
   padding: '1rem',
@@ -44,7 +44,7 @@ interface FileUploadFieldProps {
   label: string;
   helperText?: string;
   accept?: string;
-  error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
+  error?: FieldError | Merge<FieldError, FieldErrorsImpl<FieldValues>>;
   registration: UseFormRegisterReturn;
 }
 

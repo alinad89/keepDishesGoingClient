@@ -90,7 +90,8 @@ export function usePageLoadAnimation(options: PageLoadAnimationOptions = {}) {
         (el as HTMLElement).style.transform = '';
       });
     };
-  }, []); // Empty dependency array = runs once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array = runs once on mount (animation options are intentionally not dependencies)
 
   return containerRef;
 }
@@ -127,7 +128,8 @@ export function useSimpleAnimation(options: PageLoadAnimationOptions = {}) {
       delay,
       easing
     });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array = runs once on mount (animation options are intentionally not dependencies)
 
   return elementRef;
 }

@@ -10,7 +10,7 @@ import type {
   CreateMessageResponse,
   ChatListItem,
   Chat,
-} from '../types/api';
+} from '../types/chat.types';
 import { ApiError } from '../api/config';
 
 /**

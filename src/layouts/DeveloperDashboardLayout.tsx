@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import DeveloperNavbar from '../components/DeveloperNavbar'
+import DeveloperNavbar from '../components/navigation/DeveloperNavbar'
 import './DeveloperDashboardLayout.css'
 
 interface DeveloperDashboardLayoutProps {

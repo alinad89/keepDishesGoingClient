@@ -12,7 +12,7 @@ import {
   type UpdateGameRequest,
   type ChangeGameStatusRequest,
 } from '../api/games';
-import type { GameStatusAction } from '../types/api';
+import type { GameStatusAction } from '../types/game.types';
 import { ApiError } from '../api/config';
 
 // Re-export types for convenience

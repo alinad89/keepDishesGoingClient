@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import Button from '../components/Button'
-import Card from '../components/Card'
-import Section from '../components/Section'
+import Button from '../components/ui/Button'
+import Card from '../components/ui/Card'
+import Section from '../components/ui/Section'
 import { useGames } from '../hooks/useGames'
 import { SearchInput, FilterBar, Grid, EmptyState, PageContainer } from '../components/common'
 

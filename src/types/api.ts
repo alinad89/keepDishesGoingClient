@@ -23,14 +23,6 @@ export interface RegisterDeveloperResponse {
   id: string;
 }
 
-// Game status enum
-export type GameStatus =
-  | 'IN_DEVELOPMENT'
-  | 'READY_FOR_PUBLISHING'
-  | 'ONLINE'
-  | 'REJECTED'
-  | 'OFFLINE';
-
 // Game
 export interface Game {
   id: string;
@@ -44,7 +36,7 @@ export interface Game {
   tags: string[];
   version: string;
   url: string;
-  status?: GameStatus; // Optional for backward compatibility
+  status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
 export type DeploymentMode = 'url' | 'backend-zip';

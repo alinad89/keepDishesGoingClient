@@ -1,7 +1,7 @@
 import type { UseFormRegister, FieldErrors, FieldValues, Path, FieldError } from 'react-hook-form';
 import { FormControl, InputLabel, Select, MenuItem, TextField, FormHelperText } from '@mui/material';
 import FileUploadField from './FileUploadField';
-import type { DeploymentMode } from '../../types/api';
+import type { DeploymentMode } from '../../types/game.types';
 
 interface GameFilesFieldsProps<T extends FieldValues> {
   register: UseFormRegister<T>;
