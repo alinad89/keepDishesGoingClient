@@ -4,7 +4,7 @@ import type {
   CreateGameResponse,
   UpdateGameRequest,
   ChangeGameStatusRequest,
-} from '../types/api';
+} from '../types/game.types';
 import {
   DEVELOPER_ENDPOINTS,
   apiGet,

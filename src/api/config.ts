@@ -1,4 +1,4 @@
-import type { ApiErrorResponse } from '../types/api';
+import type { ApiErrorResponse } from '../types/api-error.types';
 import keycloak from '../keycloak';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';

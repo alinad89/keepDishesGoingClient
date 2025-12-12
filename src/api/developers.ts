@@ -1,5 +1,5 @@
 import http from './http';
-import type { RegisterDeveloperResponse } from '../types/api';
+import type { RegisterDeveloperResponse } from '../types/developer.types';
 
 /**
  * Register a developer

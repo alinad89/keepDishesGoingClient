@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useKeycloak } from '@react-keycloak/web'
-import { useMyLobbyInvitations } from '../hooks/useLobbies'
 import './Navbar.css'
+import {useMyLobbyInvitations} from "../../hooks/useLobbies.ts";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)

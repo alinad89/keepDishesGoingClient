@@ -1,23 +1,17 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import LandingPage from './pages/LandingPage'
-import GamesPage from './pages/GamesPage'
-import LobbyPage from './pages/LobbyPage'
-import InvitationsPage from './pages/InvitationsPage'
-import FriendsPage from './pages/FriendsPage'
-import AchievementsPage from './pages/AchievementsPage'
-import DeveloperPage from './pages/DeveloperPage'
-import DeveloperDashboardPage from './pages/DeveloperDashboardPage'
-import { CreateGamePage } from './pages/CreateGamePage'
-import ManageGamesPage from './pages/ManageGamesPage'
-import GameDetailsPage from './pages/GameDetailsPage'
-import EditGamePage from './pages/EditGamePage'
-import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
-import AuthLanding from './pages/AuthLanding'
-import AuthCallback from './pages/AuthCallback'
-import { Protected } from './routes/Protected'
+import Navbar from './components/navigation/Navbar'
 import { ChatBox } from './components/ChatBox'
+import { authRoutes, developerRoutes, publicRoutes } from './routes/routeConfig'
+import { renderAuthRoutes, renderDeveloperRoutes, renderPublicRoutes } from './routes/routeUtils'
 import './App.css'
+import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
+import { Protected } from './routes/Protected'
+import InvitationsPage from "./pages/InvitationsPage.tsx";
+import DeveloperDashboardPage from "./pages/DeveloperDashboardPage.tsx";
+import ManageGamesPage from "./pages/ManageGamesPage.tsx";
+import {CreateGamePage} from "./pages/CreateGamePage.tsx";
+import GameDetailsPage from "./pages/GameDetailsPage.tsx";
+import EditGamePage from './pages/EditGamePage.tsx'
 
 function App() {
   // Note: User registration is now handled in AuthCallback page
@@ -28,10 +22,10 @@ function App() {
       <div className="app">
         <Routes>
           {/* Authentication Routes */}
-          <Route path="/auth" element={<AuthLanding />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+          {renderAuthRoutes(authRoutes)}
 
           {/* Developer Dashboard Routes - Protected with authentication */}
+          {renderDeveloperRoutes(developerRoutes)}
           <Route path="/developer/dashboard" element={
             <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
@@ -74,13 +68,8 @@ function App() {
               <Navbar />
               <main className="main-container">
                 <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/games" element={<GamesPage />} />
-                  <Route path="/lobby" element={<LobbyPage />} />
+                  {renderPublicRoutes(publicRoutes)}
                   <Route path="/invitations" element={<InvitationsPage />} />
-                  <Route path="/friends" element={<FriendsPage />} />
-                  <Route path="/achievements" element={<AchievementsPage />} />
-                  <Route path="/developer" element={<DeveloperPage />} />
                 </Routes>
               </main>
             </>
