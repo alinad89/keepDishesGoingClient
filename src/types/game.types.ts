@@ -55,9 +55,9 @@ export interface UpdateGameRequest {
 }
 
 export type GameStatusAction =
-  | 'MARK-READY-FOR-PUBLISHING'
-  | 'MARK-ONLINE'
-  | 'MARK-REJECTED';
+  | 'MARK_READY_FOR_PUBLISHING'
+  | 'MARK_ONLINE'
+  | 'MARK_REJECTED';
 
 export interface ChangeGameStatusRequest {
   id: string;

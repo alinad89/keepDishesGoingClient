@@ -23,7 +23,6 @@ export async function registerDeveloper(): Promise<RegisterDeveloperResponse> {
  * Assign a Keycloak role to the current user
  * POST /api/users/assign-role?role={roleName}
  *
- * Note: This endpoint needs to be implemented in your backend.
  * The backend should use Keycloak Admin API to assign the role.
  */
 export async function assignUserRole(role: string): Promise<void> {
