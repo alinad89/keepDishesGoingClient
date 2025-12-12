@@ -80,49 +80,51 @@ export default function AuthCallback() {
     const syncKey = `user_synced_${keycloak.tokenParsed?.sub}`;
     const alreadySynced = sessionStorage.getItem(syncKey);
 
-    if (hasAdminRole) {
-      // User is an admin - register in backend and redirect to game management
-      if (!alreadySynced) {
-        console.log('[AuthCallback] Registering administrator in backend...');
-        registerAdministratorAsync()
-          .then((response) => {
+    const handleUserRegistration = async () => {
+      if (hasAdminRole) {
+        // User is an admin - register in backend and redirect to game management
+        if (!alreadySynced) {
+          console.log('[AuthCallback] Registering administrator in backend...');
+          try {
+            const response = await registerAdministratorAsync();
             console.log('[AuthCallback] Administrator registered:', response);
             sessionStorage.setItem(syncKey, 'true');
             navigate('/developer/games');
-          })
-          .catch((error) => {
+          } catch (error) {
             console.error('[AuthCallback] Failed to register administrator:', error);
             // Still redirect to game management, backend might already have the user
             navigate('/developer/games');
-          });
-      } else {
-        // Already synced, just redirect
-        navigate('/developer/games');
-      }
-    } else if (intendedRole === ROLES.DEVELOPER || hasDeveloperRole) {
-      // User is a developer - register in backend and redirect to dashboard
-      if (!alreadySynced) {
-        console.log('[AuthCallback] Registering developer in backend...');
-        registerDeveloperAsync()
-          .then((response) => {
+          }
+        } else {
+          // Already synced, just redirect
+          navigate('/developer/games');
+        }
+      } else if (intendedRole === ROLES.DEVELOPER || hasDeveloperRole) {
+        // User is a developer - register in backend and redirect to dashboard
+        if (!alreadySynced) {
+          console.log('[AuthCallback] Registering developer in backend...');
+          try {
+            const response = await registerDeveloperAsync();
             console.log('[AuthCallback] Developer registered:', response);
             sessionStorage.setItem(syncKey, 'true');
             navigate('/developer/dashboard');
-          })
-          .catch((error) => {
+          } catch (error) {
             console.error('[AuthCallback] Failed to register developer:', error);
             // Still redirect to dashboard, backend might already have the user
             navigate('/developer/dashboard');
-          });
+          }
+        } else {
+          // Already synced, just redirect
+          navigate('/developer/dashboard');
+        }
       } else {
-        // Already synced, just redirect
-        navigate('/developer/dashboard');
+        // User is a player - redirect to games page
+        console.log('[AuthCallback] Player login, redirecting to games...');
+        navigate('/games');
       }
-    } else {
-      // User is a player - redirect to games page
-      console.log('[AuthCallback] Player login, redirecting to games...');
-      navigate('/games');
-    }
+    };
+
+    handleUserRegistration();
   }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, navigate, error]);
 
   return (
