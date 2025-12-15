@@ -31,6 +31,7 @@ export const CHATBOT_ENDPOINTS = {
   register: '/chatbot-users',
   chats: '/chats',
   chatById: (id: string) => `/chats/${id}`,
+  ragVault: '/chats/rag-vault',
 } as const;
 
 export const PLATFORM_ENDPOINTS = {

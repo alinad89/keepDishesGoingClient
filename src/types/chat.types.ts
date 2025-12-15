@@ -33,3 +33,22 @@ export interface CreateMessageResponse {
   chatId: string; // The actual field the backend returns
   message?: ChatMessage; // Optional: Backend might include AI response here
 }
+
+// ========================================
+// RAG Vault Types
+// ========================================
+
+export interface RagVaultContent {
+  content: string[];
+  total_chunks: number;
+}
+
+export interface UpdateRagVaultRequest {
+  content: string;
+  auto_chunk: boolean;
+}
+
+export interface UpdateRagVaultResponse {
+  chunks_added: number;
+  message: string;
+}
