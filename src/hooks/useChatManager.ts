@@ -36,8 +36,9 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
     }
 
     let pollAttempt = 0;
-    const maxPollAttempts = 5;
-    const pollInterval = 2000;
+    const maxPollAttempts = 8; // Increased attempts
+    const initialPollDelay = 500; // Start polling faster (500ms)
+    const pollInterval = 1500; // Subsequent polls every 1.5s
 
     const pollForMessages = async () => {
       pollAttempt++;
@@ -49,18 +50,30 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
           console.log('[useChatManager] Poll result - found', chatData.messages.length, 'messages');
 
           setMessages((currentMessages) => {
-            const hasNewMessages = chatData.messages.some(
-              (msg, index) => msg.aiMessage && (!currentMessages[index] || currentMessages[index].content !== msg.content)
+            // Check if we have more messages or new AI messages
+            const hasNewMessages = chatData.messages.length > currentMessages.length;
+            const hasNewAiMessage = chatData.messages.some(
+              (msg) => msg.aiMessage && !currentMessages.some(
+                (currentMsg) => currentMsg.aiMessage && currentMsg.content === msg.content
+              )
             );
 
-            if (hasNewMessages || chatData.messages.length > currentMessages.length) {
-              console.log('[useChatManager] Updating messages from poll');
+            if (hasNewMessages || hasNewAiMessage) {
+              console.log('[useChatManager] New AI message found via polling, updating messages');
               return chatData.messages;
             }
 
+            // Continue polling if no AI response yet and we haven't exceeded max attempts
             if (pollAttempt < maxPollAttempts) {
-              console.log(`[useChatManager] No new messages yet, scheduling poll attempt ${pollAttempt + 1}`);
-              pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
+              const lastMessage = chatData.messages[chatData.messages.length - 1];
+              const waitingForAiResponse = lastMessage && !lastMessage.aiMessage;
+
+              if (waitingForAiResponse) {
+                console.log(`[useChatManager] Still waiting for AI response, scheduling poll attempt ${pollAttempt + 1}`);
+                pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
+              } else {
+                console.log('[useChatManager] AI response already present, stopping polls');
+              }
             } else {
               console.log('[useChatManager] Max poll attempts reached, stopping');
             }
@@ -70,10 +83,15 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
         }
       } catch (error) {
         console.error('[useChatManager] Failed to poll for messages:', error);
+        // Retry polling even on error if we haven't exceeded max attempts
+        if (pollAttempt < maxPollAttempts) {
+          pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
+        }
       }
     };
 
-    pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
+    // Start first poll quickly for new chats
+    pollTimeoutRef.current = window.setTimeout(pollForMessages, initialPollDelay);
   }, []);
 
   // WebSocket message handler
@@ -88,9 +106,19 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
         pollTimeoutRef.current = null;
       }
 
-      // Add AI response to messages
+      // Add AI response to messages (with deduplication)
       setMessages((prev) => {
-        console.log('[useChatManager] Adding message to state. Current messages:', prev.length);
+        // Check if this exact message already exists (prevent duplicates)
+        const isDuplicate = prev.some(
+          (msg) => msg.aiMessage === data.message.aiMessage && msg.content === data.message.content
+        );
+
+        if (isDuplicate) {
+          console.log('[useChatManager] Duplicate message detected, skipping');
+          return prev;
+        }
+
+        console.log('[useChatManager] Adding new message to state. Current messages:', prev.length);
         return [...prev, data.message];
       });
 
@@ -112,12 +140,12 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
 
   // Load messages when a chat is selected
   useEffect(() => {
-    if (selectedChat) {
-      console.log('Loading chat:', selectedChat.id, 'with', selectedChat.messages.length, 'messages');
+    if (selectedChat && selectedChatId) {
+      console.log('Loading chat:', selectedChatId, 'with', selectedChat.messages.length, 'messages');
       setMessages(selectedChat.messages);
-      setChatId(selectedChat.id);
+      setChatId(selectedChatId);
     }
-  }, [selectedChat]);
+  }, [selectedChat, selectedChatId]);
 
   // Cleanup poll timeout on unmount
   useEffect(() => {
@@ -162,32 +190,25 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
         const newChatId = response.chatId;
         console.log('Chat created with ID:', newChatId);
 
+        // Set chatId first to enable WebSocket connection
         setChatId(newChatId);
         setSelectedChatId(newChatId);
         refetchChats();
 
-        // Fallback: add AI response from HTTP if available
-        if (response.message) {
-          console.log('Adding AI response from HTTP response:', response.message);
-          setMessages((prev) => [...prev, response.message!]);
-        } else {
-          console.log('Waiting for AI response via WebSocket...');
-          schedulePollForMessages(newChatId);
-        }
+        // For new chats, WebSocket message was likely sent before we subscribed
+        // So we always use polling as fallback to ensure we get the AI response
+        console.log('Scheduling poll for new chat to catch AI response...');
+        schedulePollForMessages(newChatId);
       } else {
-        // Send to existing chat
+        // Send to existing chat (WebSocket already connected)
         console.log('Sending message to chat:', chatId);
         const response = await sendMessageAsync(chatId, { message: userMessage.content });
         console.log('Message sent, response:', response);
 
-        // Fallback: add AI response from HTTP if available
-        if (response.message) {
-          console.log('Adding AI response from HTTP response:', response.message);
-          setMessages((prev) => [...prev, response.message!]);
-        } else {
-          console.log('Waiting for AI response via WebSocket...');
-          schedulePollForMessages(chatId);
-        }
+        // For existing chats, WebSocket should deliver the message
+        // But we still schedule polling as a safety fallback
+        console.log('Waiting for AI response via WebSocket (with polling fallback)...');
+        schedulePollForMessages(chatId);
       }
     } catch (error) {
       console.error('Failed to send message:', error);

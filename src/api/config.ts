@@ -28,6 +28,7 @@ export const ADMIN_ENDPOINTS = {
 
 export const CHATBOT_ENDPOINTS = {
   platformInfo: '/platform/info',
+  register: '/chatbot-users',
   chats: '/chats',
   chatById: (id: string) => `/chats/${id}`,
 } as const;
