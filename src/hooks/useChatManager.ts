@@ -13,6 +13,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [waitingForResponse, setWaitingForResponse] = useState(false);
   const pollTimeoutRef = useRef<number | null>(null);
 
   // Fetch chat list
@@ -60,6 +61,9 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
 
             if (hasNewMessages || hasNewAiMessage) {
               console.log('[useChatManager] New AI message found via polling, updating messages');
+              if (hasNewAiMessage) {
+                setWaitingForResponse(false);
+              }
               return chatData.messages;
             }
 
@@ -73,9 +77,11 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
                 pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
               } else {
                 console.log('[useChatManager] AI response already present, stopping polls');
+                setWaitingForResponse(false);
               }
             } else {
               console.log('[useChatManager] Max poll attempts reached, stopping');
+              setWaitingForResponse(false);
             }
 
             return currentMessages;
@@ -86,13 +92,15 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
         // Retry polling even on error if we haven't exceeded max attempts
         if (pollAttempt < maxPollAttempts) {
           pollTimeoutRef.current = window.setTimeout(pollForMessages, pollInterval);
+        } else {
+          setWaitingForResponse(false);
         }
       }
     };
 
     // Start first poll quickly for new chats
     pollTimeoutRef.current = window.setTimeout(pollForMessages, initialPollDelay);
-  }, []);
+  }, [setWaitingForResponse]);
 
   // WebSocket message handler
   const handleWebSocketMessage = useCallback(
@@ -119,6 +127,9 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
         }
 
         console.log('[useChatManager] Adding new message to state. Current messages:', prev.length);
+        if (data.message.aiMessage) {
+          setWaitingForResponse(false);
+        }
         return [...prev, data.message];
       });
 
@@ -160,6 +171,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
   const handleSelectChat = useCallback((chatIdToSelect: string) => {
     console.log('Selecting chat:', chatIdToSelect);
     setSelectedChatId(chatIdToSelect);
+    setWaitingForResponse(false);
   }, []);
 
   // Handle starting a new chat
@@ -167,6 +179,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
     setSelectedChatId(null);
     setChatId(null);
     setMessages([]);
+    setWaitingForResponse(false);
   }, []);
 
   // Handle sending a message
@@ -181,6 +194,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
     // Add user message to UI immediately
     setMessages((prev) => [...prev, userMessage]);
     setMessage('');
+    setWaitingForResponse(true);
 
     try {
       if (!chatId) {
@@ -219,6 +233,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
           content: 'Sorry, there was an error sending your message. Please try again.',
         },
       ]);
+      setWaitingForResponse(false);
     }
   }, [message, loading, chatId, createChatAsync, sendMessageAsync, refetchChats, schedulePollForMessages]);
 
@@ -230,6 +245,7 @@ export function useChatManager({ enabled }: UseChatManagerOptions) {
     selectedChatId,
     chats,
     loading,
+    waitingForResponse,
     isConnected,
     wsError,
 

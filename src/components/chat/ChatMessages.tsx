@@ -3,9 +3,10 @@ import type { ChatMessage } from '../../types/chat.types';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
+  waitingForResponse: boolean;
 }
 
-export function ChatMessages({ messages }: ChatMessagesProps) {
+export function ChatMessages({ messages, waitingForResponse }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -32,6 +33,17 @@ export function ChatMessages({ messages }: ChatMessagesProps) {
             </div>
           </div>
         ))
+      )}
+      {waitingForResponse && (
+        <div className="chatbox-message chatbox-message-ai">
+          <div className="chatbox-message-content chatbox-message-content-ai">
+            <div className="chatbox-typing-indicator" aria-label="Assistant is typing">
+              <span className="chatbox-typing-dot" />
+              <span className="chatbox-typing-dot" />
+              <span className="chatbox-typing-dot" />
+            </div>
+          </div>
+        </div>
       )}
       <div ref={messagesEndRef} />
     </div>

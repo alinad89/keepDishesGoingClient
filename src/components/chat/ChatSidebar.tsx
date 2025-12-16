@@ -35,6 +35,14 @@ export function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat }: 
         </button>
       </div>
       <div className="chatbox-chat-list">
+        <button
+          className="chatbox-chat-item chatbox-new-chat-tile"
+          onClick={onNewChat}
+          title="Start a new chat"
+        >
+          <div className="chatbox-new-chat-icon">+</div>
+          <span className="chatbox-chat-name">New Chat</span>
+        </button>
         {chats.length === 0 ? (
           <div className="chatbox-no-chats">No chats yet</div>
         ) : (
