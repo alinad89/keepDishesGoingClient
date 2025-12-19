@@ -17,6 +17,19 @@ export interface Game {
   status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
+export interface PlatformGame {
+  id: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  coverImageUrl: string;
+  rules: string;
+  shortDescription: string;
+  tags: string[];
+  version: string;
+  priceAmount: number;
+}
+
 export type DeploymentMode = 'url' | 'backend-zip';
 
 export interface GameMetadata {

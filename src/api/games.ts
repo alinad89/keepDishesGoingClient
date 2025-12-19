@@ -3,7 +3,7 @@ import type {
   CreateGameRequest,
   CreateGameResponse,
   UpdateGameRequest,
-  ChangeGameStatusRequest,
+  ChangeGameStatusRequest, PlatformGame,
 } from '../types/game.types';
 import {
   DEVELOPER_ENDPOINTS,
@@ -12,7 +12,7 @@ import {
   apiPatch,
   apiDelete,
   apiPost,
-  USE_MOCK_API,
+  USE_MOCK_API, PLATFORM_ENDPOINTS,
 } from './config';
 
 // Re-export types for convenience
@@ -30,6 +30,34 @@ export type {
  */
 export async function fetchGames(): Promise<Game[]> {
   const data = await apiGet<Game[]>(DEVELOPER_ENDPOINTS.games);
+  return data || [];
+}
+
+/**
+ * Fetch all games for players
+ * GET /api/platform/games
+ */
+export interface PlatformGamesQueryParams {
+  searchQuery?: string;
+  filterBy?: string[];
+}
+
+export async function fetchPublishedGames(params: PlatformGamesQueryParams = {}): Promise<PlatformGame[]> {
+  const query = new URLSearchParams();
+
+  if (params.searchQuery) {
+    query.set('searchQuery', params.searchQuery);
+  }
+
+  if (params.filterBy && params.filterBy.length > 0) {
+    params.filterBy.forEach(tag => query.append('filterBy', tag));
+  }
+
+  const endpoint = query.toString()
+    ? `${PLATFORM_ENDPOINTS.games}?${query.toString()}`
+    : PLATFORM_ENDPOINTS.games;
+
+  const data = await apiGet<PlatformGame[]>(endpoint);
   return data || [];
 }
 

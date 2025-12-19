@@ -33,6 +33,7 @@ export const CHATBOT_ENDPOINTS = {
 } as const;
 
 export const PLATFORM_ENDPOINTS = {
+  games: "/platform/games",
   players: '/players',
   allPlayers: '/players',
   lobbies: '/lobbies',
