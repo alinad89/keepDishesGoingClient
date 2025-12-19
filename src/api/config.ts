@@ -38,6 +38,9 @@ export const PLATFORM_ENDPOINTS = {
   lobbies: '/lobbies',
   myLobby: '/lobbies/me',
   lobbyStatus: '/lobbies/me/status',
+  gameLibrary: '/game-libraries/me',
+  addGameToLibrary: '/game-libraries/me/games',
+  addGameToFavourites: (gameId:string) =>`/game-libraries/me/games/${gameId}`,
   paymentLinkGeneration: (gameId: string) => `/games/${gameId}/purchase-session`,
 } as const;
 
