@@ -3,7 +3,8 @@ import type {
   CreateGameRequest,
   CreateGameResponse,
   UpdateGameRequest,
-  ChangeGameStatusRequest, PlatformGame,
+  ChangeGameStatusRequest,
+  PlatformGame,
 } from '../types/game.types';
 import {
   DEVELOPER_ENDPOINTS,
@@ -96,6 +97,7 @@ export async function createGame(
       tags: gameData.metadata.tags,
       version: gameData.metadata.version,
       url: gameData.metadata.url || `https://example.com/${gameKey}`,
+      priceAmount: gameData.metadata.priceUnits,
     };
 
     // Post to JSON Server as simple JSON
@@ -107,16 +109,13 @@ export async function createGame(
     };
   }
 
-  // Real API: Build FormData for multipart upload with metadata as JSON
+  // Real API: Build FormData for multipart upload with metadata blob
   const formData = new FormData();
 
-  // Add metadata as JSON blob
   const metadataBlob = new Blob([JSON.stringify(gameData.metadata)], {
     type: 'application/json',
   });
   formData.append('metadata', metadataBlob);
-
-  // Add required files
   formData.append('thumbnail', gameData.thumbnail);
   formData.append('coverImage', gameData.coverImage);
 

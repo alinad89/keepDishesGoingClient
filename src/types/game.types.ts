@@ -14,6 +14,7 @@ export interface Game {
   tags: string[];
   version: string;
   url: string;
+  priceAmount: number;
   status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
@@ -40,6 +41,7 @@ export interface GameMetadata {
   tags: string[];
   version: string;
   url: string;
+  priceUnits: number;
 }
 
 export interface CreateGameRequest {
