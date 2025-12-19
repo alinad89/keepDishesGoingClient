@@ -45,6 +45,11 @@ function Navbar() {
     navLinks.push({ path: '/developer/games', label: isAdmin ? 'Manage Games (Admin)' : 'My Games' })
   }
 
+  // Add RAG Management link for admins only
+  if (isAdmin) {
+    navLinks.push({ path: '/admin/rag', label: 'Modify RAG' })
+  }
+
 
   const handleLogout = () => {
     const redirectUri = window.location.origin

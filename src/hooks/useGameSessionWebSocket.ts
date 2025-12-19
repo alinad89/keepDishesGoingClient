@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { getAuthToken } from '../api/config';
 
 export interface ExternalSessionMessage {
   url: string;
@@ -18,7 +19,7 @@ interface UseGameSessionWebSocketOptions {
   onError?: (message: string) => void;
 }
 
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8082';
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || window.location.origin;
 
 export function useGameSessionWebSocket({
   enabled,
@@ -123,8 +124,16 @@ export function useGameSessionWebSocket({
       return;
     }
 
+    // Get auth token for WebSocket connection
+    const token = getAuthToken();
+    const connectHeaders: Record<string, string> = {};
+    if (token) {
+      connectHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
     const client = new Client({
       webSocketFactory: () => new SockJS(WS_BASE_URL + '/ws'),
+      connectHeaders,
       debug: (str) => console.log('[GameSessionWebSocket]', str),
       reconnectDelay: RECONNECT_DELAY,
       heartbeatIncoming: 4000,

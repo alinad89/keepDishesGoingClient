@@ -16,6 +16,7 @@ export function ChatBox() {
     selectedChatId,
     chats,
     loading,
+    waitingForResponse,
     isConnected,
     wsError,
     setMessage,
@@ -44,7 +45,7 @@ export function ChatBox() {
           onClose={() => setIsOpen(false)}
         />
 
-        <ChatMessages messages={messages} />
+        <ChatMessages messages={messages} waitingForResponse={waitingForResponse} />
 
         <ChatInput
           message={message}
