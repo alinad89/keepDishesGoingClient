@@ -35,11 +35,16 @@ export const CHATBOT_ENDPOINTS = {
 } as const;
 
 export const PLATFORM_ENDPOINTS = {
+  games: "/platform/games",
   players: '/players',
   allPlayers: '/players',
   lobbies: '/lobbies',
   myLobby: '/lobbies/me',
   lobbyStatus: '/lobbies/me/status',
+  gameLibrary: '/game-libraries/me',
+  addGameToLibrary: '/game-libraries/me/games',
+  addGameToFavourites: (gameId:string) =>`/game-libraries/me/games/${gameId}`,
+  paymentLinkGeneration: (gameId: string) => `/games/${gameId}/purchase-session`,
 } as const;
 
 export const SOCIAL_ENDPOINTS = {

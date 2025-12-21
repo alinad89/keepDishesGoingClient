@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { Box, Alert } from '@mui/material';
-import type { CreateGameRequest, DeploymentMode } from '../../types/game.types';
+import type { CreateGameRequest } from '../../types/game.types';
 import { useCreateGame } from '../../hooks/useGames';
 import { GAME_TAGS } from '../../schemas/game.schema';
 import { z } from 'zod';
@@ -13,21 +14,6 @@ import GameMediaFields from './GameMediaFields';
 import GameDescriptionFields from './GameDescriptionFields';
 import GameFilesFields from './GameFilesFields';
 import GameTagsSelector from './GameTagsSelector';
-
-// Form data interface for react-hook-form (uses FileList instead of File)
-interface CreateGameFormData {
-  name: string;
-  description: string;
-  thumbnail: FileList;
-  coverImage: FileList;
-  rules: string;
-  shortDescription: string;
-  tags: (typeof GAME_TAGS)[number][];
-  version: string;
-  deploymentMode: DeploymentMode;
-  url?: string;
-  backendFiles?: FileList;
-}
 
 // Custom schema for form validation (adapts to FileList)
 const createGameFormSchema = z.object({
@@ -50,6 +36,10 @@ const createGameFormSchema = z.object({
     .regex(/^\d+\.\d+\.\d+$/, 'Version must be in format X.Y.Z (e.g., 1.0.0)'),
   deploymentMode: z.enum(['url', 'backend-zip']),
   url: z.string().optional(),
+  priceUnits: z.number()
+    .min(0, 'Price must be 0 or greater')
+    .refine((value) => Number.isFinite(value), 'Price must be a number'),
+  isFree: z.boolean(),
   thumbnail: z.custom<FileList>()
     .refine((files) => files?.length > 0, 'Thumbnail image is required')
     .refine((files) => files?.[0]?.size <= 5 * 1024 * 1024, 'Thumbnail must be less than 5MB')
@@ -106,7 +96,21 @@ const createGameFormSchema = z.object({
     message: 'Valid URL is required for URL deployment mode',
     path: ['url'],
   }
+).refine(
+  (data) => {
+    if (!data.isFree) {
+      return data.priceUnits > 0;
+    }
+    return true;
+  },
+  {
+    message: 'Price must be greater than 0 unless the game is free',
+    path: ['priceUnits'],
+  }
 );
+
+type CreateGameFormData = z.infer<typeof createGameFormSchema>;
+type CreateGameFormContext = { source: 'create-game-form' };
 
 export function CreateGameForm() {
   const navigate = useNavigate();
@@ -118,8 +122,10 @@ export function CreateGameForm() {
     formState: { errors },
     watch,
     control,
-  } = useForm<CreateGameFormData>({
-    resolver: zodResolver(createGameFormSchema),
+    setValue,
+  } = useForm<CreateGameFormData, CreateGameFormContext>({
+    resolver: zodResolver<CreateGameFormData, CreateGameFormContext, CreateGameFormData>(createGameFormSchema),
+    context: { source: 'create-game-form' },
     defaultValues: {
       name: '',
       description: '',
@@ -129,14 +135,28 @@ export function CreateGameForm() {
       version: '1.0.0',
       deploymentMode: 'url',
       url: '',
+      priceUnits: 0,
+      isFree: true,
     },
   });
 
-  const selectedTags = watch('tags');
+  const emptyTags: CreateGameFormData['tags'] = [];
+  const selectedTags = watch('tags', emptyTags);
   const deploymentMode = watch('deploymentMode');
+  const isFree = watch('isFree');
+
+  useEffect(() => {
+    if (isFree) {
+      // Ensure backend receives zero when marked free
+      setValue('priceUnits', 0);
+    }
+  }, [isFree, setValue]);
 
   const onSubmit = async (data: CreateGameFormData) => {
     // Zod validation already ensures all required fields are present and valid
+    const priceUnits = data.isFree ? 0 : data.priceUnits;
+    const url = data.deploymentMode === 'url' ? data.url || '' : '';
+
     const request: CreateGameRequest = {
       deploymentMode: data.deploymentMode,
       metadata: {
@@ -146,7 +166,8 @@ export function CreateGameForm() {
         shortDescription: data.shortDescription,
         tags: data.tags,
         version: data.version,
-        url: data.url || '',
+        url,
+        priceUnits,
       },
       thumbnail: data.thumbnail?.[0],
       coverImage: data.coverImage?.[0],
@@ -179,12 +200,12 @@ export function CreateGameForm() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr' },
-          gap: 3,
-        }}
-      >
+        gridTemplateColumns: { xs: '1fr', md: '1.2fr 1fr' },
+        gap: 3,
+      }}
+    >
         <FormCard title="Basic Information" description="Enter your game's core details">
-          <GameBasicInfoFields register={register} errors={errors} />
+          <GameBasicInfoFields register={register} errors={errors} isFree={isFree} />
         </FormCard>
 
         <FormCard title="Media & Assets" description="Upload images for your game">

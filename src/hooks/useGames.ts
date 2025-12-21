@@ -10,9 +10,9 @@ import {
   type CreateGameRequest,
   type CreateGameResponse,
   type UpdateGameRequest,
-  type ChangeGameStatusRequest,
+  type ChangeGameStatusRequest, fetchPublishedGames,
 } from '../api/games';
-import type { GameStatusAction } from '../types/game.types';
+import type {GameStatusAction, PlatformGame} from '../types/game.types';
 import { ApiError } from '../api/config';
 
 // Re-export types for convenience
@@ -24,6 +24,11 @@ export type {
   ChangeGameStatusRequest,
   GameStatusAction,
 };
+
+export interface PlatformGamesFilters {
+  searchQuery?: string;
+  filterBy?: string[];
+}
 
 /**
  * Hook to fetch all games
@@ -39,6 +44,35 @@ export function useGames() {
   } = useQuery<Game[], Error>({
     queryKey: ['games'],
     queryFn: fetchGames,
+  });
+
+  return {
+    games,
+    loading: isLoading,
+    error: error instanceof ApiError ? error : null,
+    isError,
+    refetch,
+  };
+}
+
+/**
+ * Hook to fetch platform available games
+ * /api/platform/games
+ */
+export function usePlatformGames(filters: PlatformGamesFilters = {}) {
+  const {
+    data: games = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<PlatformGame[], Error>({
+    queryKey: [
+      'platformGames',
+      filters.searchQuery || '',
+      (filters.filterBy || []).join(','),
+    ],
+    queryFn: () => fetchPublishedGames(filters),
   });
 
   return {

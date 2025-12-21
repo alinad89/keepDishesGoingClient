@@ -33,6 +33,7 @@ function Navbar() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
+    { path: "/library", label: 'Library' },
     { path: '/lobby', label: 'Lobby' },
     { path: '/invitations', label: 'My Invitations', badge: invitationCount > 0 ? invitationCount : undefined },
     { path: '/friends', label: 'Friends' },

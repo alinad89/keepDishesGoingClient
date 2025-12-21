@@ -53,6 +53,7 @@ export interface Game {
   tags: string[];
   version: string;
   url: string;
+  priceAmount: number;
   status?: GameStatus; // Optional for backward compatibility
 }
 
@@ -66,6 +67,7 @@ export interface GameMetadata {
   tags: string[];
   version: string;
   url: string;
+  priceUnits: number;
 }
 
 export interface CreateGameRequest {

@@ -1,61 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Section from '../components/ui/Section'
-import { useGames } from '../hooks/useGames'
+import { usePlatformGames } from '../hooks/useGames'
+import PaymentButton from '../components/ui/PaymentButton'
+import { useAddGameToLibrary } from '../hooks/useGameLibrary.ts'
 import { SearchInput, FilterBar, Grid, EmptyState, PageContainer } from '../components/common'
+import { GAME_TAGS } from "../schemas/game.schema.ts";
 
-type FilterType = 'all' | 'favourites'
 
 function GamesPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all')
-  const { games: apiGames, loading, error } = useGames()
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const { addGame, isPending: addingToLibrary } = useAddGameToLibrary()
 
-  // Load favourites from localStorage on mount
-  const [favourites, setFavourites] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('hexagon-favourites')
-      return saved ? new Set(JSON.parse(saved)) : new Set()
-    } catch {
-      return new Set()
-    }
+  const trimmedSearch = searchQuery.trim()
+
+  const { games: apiGames, loading, error, refetch } = usePlatformGames({
+    searchQuery: trimmedSearch || undefined,
+    filterBy: selectedTags.length ? selectedTags : undefined,
   })
 
-  // Persist favourites to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('hexagon-favourites', JSON.stringify([...favourites]))
-  }, [favourites])
-
-  const toggleFavourite = (gameId: string) => {
-    setFavourites(prev => {
-      const newFavs = new Set(prev)
-      if (newFavs.has(gameId)) {
-        newFavs.delete(gameId)
-      } else {
-        newFavs.add(gameId)
-      }
-      return newFavs
-    })
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => (
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    ))
   }
 
-  const filteredGames = apiGames
-    .filter(game => {
-      // Only show ONLINE games to players
-      const isOnline = game.status === 'ONLINE';
-
-      // Apply search filter
-      const matchesSearch =
-        game.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        game.description.toLowerCase().includes(searchQuery.toLowerCase())
-
-      // Apply favourites filter
-      const matchesFilter =
-        activeFilter === 'all' ||
-        (activeFilter === 'favourites' && favourites.has(game.id))
-
-      return isOnline && matchesSearch && matchesFilter
-    })
+  const resetFilters = () => {
+    setSearchQuery('')
+    setSelectedTags([])
+    refetch()
+  }
 
   if (loading) {
     return (
@@ -92,31 +68,35 @@ function GamesPage() {
             placeholder="Search games..."
           />
           <FilterBar>
-            <Button
-              variant="small"
-              onClick={() => setActiveFilter('all')}
-              className={activeFilter === 'all' ? 'filter-active' : ''}
-            >
-              All Games ({apiGames.length})
-            </Button>
-            <Button
-              variant="small"
-              onClick={() => setActiveFilter('favourites')}
-              className={activeFilter === 'favourites' ? 'filter-active' : ''}
-            >
-              Favourites ({favourites.size})
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {GAME_TAGS.map(tag => {
+                const active = selectedTags.includes(tag)
+                return (
+                  <Button
+                    key={tag}
+                    variant="small"
+                    onClick={() => toggleTag(tag)}
+                    className={active ? 'filter-active' : ''}
+                  >
+                    {tag.replace(/_/g, ' ')}
+                  </Button>
+                )
+              })}
+            </div>
+            <Button variant="small" onClick={resetFilters}>
+              Clear Filters
             </Button>
           </FilterBar>
         </div>
 
         {/* Games Grid */}
-        {filteredGames.length > 0 ? (
+        {apiGames.length > 0 ? (
           <Grid>
-            {filteredGames.map((game) => (
+            {apiGames.map((game) => (
               <Card
                 key={game.id}
                 title={game.name}
-                description={game.shortDescription}
+                description={game.shortDescription || game.description}
               >
                 <div style={{
                   display: 'flex',
@@ -134,17 +114,22 @@ function GamesPage() {
                     letterSpacing: '1px',
                     textShadow: '0 2px 10px var(--accent-glow)'
                   }}>
-                    Free
+                    {game.priceAmount > 0 ? `$${game.priceAmount}` : 'Free'}
                   </span>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <Button
-                      variant="small"
-                      onClick={() => toggleFavourite(game.id)}
-                      className={favourites.has(game.id) ? 'favourite-active' : ''}
-                    >
-                      Favourite
-                    </Button>
-                    <Button variant="small">Play</Button>
+                    {game.priceAmount > 0 ? (
+                      <PaymentButton gameId={game.id} variant="small">
+                        Aquire
+                      </PaymentButton>
+                    ) : (
+                      <Button
+                        variant="small"
+                        disabled={addingToLibrary}
+                        onClick={() => addGame({ gameId: game.id })}
+                      >
+                        {addingToLibrary ? 'Adding...' : 'Aquire'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -152,8 +137,8 @@ function GamesPage() {
           </Grid>
         ) : (
           <EmptyState
-            title={activeFilter === 'favourites' ? 'No favourite games yet' : 'No games found matching your search'}
-            description={activeFilter === 'favourites' ? 'Click the Favourite button on any game to add it to your favourites!' : undefined}
+            title="No games found"
+            description="Try adjusting your search or tag filters."
           />
         )}
       </Section>
