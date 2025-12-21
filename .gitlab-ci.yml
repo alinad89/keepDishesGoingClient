@@ -93,7 +93,6 @@ build:
 test:
   stage: test
   image: node:${NODE_VERSION}
-  cache: *node_cache
   needs:
     - build
   before_script:
@@ -140,7 +139,6 @@ test:
 code_quality:
   stage: test
   image: node:${NODE_VERSION}
-  cache: *node_cache
   needs:
     - build
   before_script:
