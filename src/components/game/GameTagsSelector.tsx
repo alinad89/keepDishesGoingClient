@@ -1,6 +1,6 @@
 import { Box, Typography, Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import { Controller } from 'react-hook-form';
-import type { Control, FieldErrors, FieldValues, Path } from 'react-hook-form';
+import type { Control, FieldErrors, FieldValues, FieldPath } from 'react-hook-form';
 
 const GAME_TAGS = [
   'STRATEGY',
@@ -25,13 +25,13 @@ const GAME_TAGS = [
   'BOARD',
 ];
 
-interface GameTagsSelectorProps<T extends FieldValues = FieldValues> {
+interface GameTagsSelectorProps<T extends FieldValues & { tags: string[] }> {
   control: Control<T>;
   errors: FieldErrors<T>;
-  selectedTags: string[];
+  selectedTags: T['tags'];
 }
 
-function GameTagsSelector<T extends FieldValues = FieldValues>({ control, errors, selectedTags }: GameTagsSelectorProps<T>) {
+function GameTagsSelector<T extends FieldValues & { tags: string[] }>({ control, errors, selectedTags }: GameTagsSelectorProps<T>) {
   return (
     <Box>
       <Typography
@@ -47,7 +47,7 @@ function GameTagsSelector<T extends FieldValues = FieldValues>({ control, errors
         Select Tags
       </Typography>
       <Controller
-        name={"tags" as Path<T>}
+        name={'tags' as FieldPath<T>}
         control={control}
         render={({ field }) => (
           <Box
@@ -65,11 +65,11 @@ function GameTagsSelector<T extends FieldValues = FieldValues>({ control, errors
                 key={tag}
                 control={
                   <Checkbox
-                    checked={field.value?.includes(tag) || false}
+                    checked={field.value.includes(tag)}
                     onChange={(e) => {
                       const newValue = e.target.checked
-                        ? [...(field.value || []), tag]
-                        : (field.value || []).filter((t: string) => t !== tag);
+                        ? [...field.value, tag]
+                        : field.value.filter((tagValue: string) => tagValue !== tag);
                       field.onChange(newValue);
                     }}
                   />

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { Box, Alert } from '@mui/material';
-import type { CreateGameRequest, DeploymentMode } from '../../types/game.types';
+import type { CreateGameRequest } from '../../types/game.types';
 import { useCreateGame } from '../../hooks/useGames';
 import { GAME_TAGS } from '../../schemas/game.schema';
 import { z } from 'zod';
@@ -14,23 +14,6 @@ import GameMediaFields from './GameMediaFields';
 import GameDescriptionFields from './GameDescriptionFields';
 import GameFilesFields from './GameFilesFields';
 import GameTagsSelector from './GameTagsSelector';
-
-// Form data interface for react-hook-form (uses FileList instead of File)
-interface CreateGameFormData {
-  name: string;
-  description: string;
-  thumbnail: FileList;
-  coverImage: FileList;
-  rules: string;
-  shortDescription: string;
-  tags: (typeof GAME_TAGS)[number][];
-  version: string;
-  deploymentMode: DeploymentMode;
-  url?: string;
-  backendFiles?: FileList;
-  priceUnits: number;
-  isFree: boolean;
-}
 
 // Custom schema for form validation (adapts to FileList)
 const createGameFormSchema = z.object({
@@ -53,7 +36,7 @@ const createGameFormSchema = z.object({
     .regex(/^\d+\.\d+\.\d+$/, 'Version must be in format X.Y.Z (e.g., 1.0.0)'),
   deploymentMode: z.enum(['url', 'backend-zip']),
   url: z.string().optional(),
-  priceUnits: z.coerce.number()
+  priceUnits: z.number()
     .min(0, 'Price must be 0 or greater')
     .refine((value) => Number.isFinite(value), 'Price must be a number'),
   isFree: z.boolean(),
@@ -126,6 +109,9 @@ const createGameFormSchema = z.object({
   }
 );
 
+type CreateGameFormData = z.infer<typeof createGameFormSchema>;
+type CreateGameFormContext = { source: 'create-game-form' };
+
 export function CreateGameForm() {
   const navigate = useNavigate();
   const { createGameAsync, loading, error } = useCreateGame();
@@ -137,8 +123,9 @@ export function CreateGameForm() {
     watch,
     control,
     setValue,
-  } = useForm<CreateGameFormData>({
-    resolver: zodResolver(createGameFormSchema),
+  } = useForm<CreateGameFormData, CreateGameFormContext>({
+    resolver: zodResolver<CreateGameFormData, CreateGameFormContext, CreateGameFormData>(createGameFormSchema),
+    context: { source: 'create-game-form' },
     defaultValues: {
       name: '',
       description: '',
@@ -153,7 +140,8 @@ export function CreateGameForm() {
     },
   });
 
-  const selectedTags = watch('tags');
+  const emptyTags: CreateGameFormData['tags'] = [];
+  const selectedTags = watch('tags', emptyTags);
   const deploymentMode = watch('deploymentMode');
   const isFree = watch('isFree');
 
