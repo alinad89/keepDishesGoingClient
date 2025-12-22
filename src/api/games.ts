@@ -13,7 +13,10 @@ import {
   apiPatch,
   apiDelete,
   apiPost,
-  USE_MOCK_API, PLATFORM_ENDPOINTS,
+  USE_MOCK_API,
+  PLATFORM_ENDPOINTS,
+  apiFetch,
+  getAuthTokenIfAvailable,
 } from './config';
 
 // Re-export types for convenience
@@ -58,7 +61,12 @@ export async function fetchPublishedGames(params: PlatformGamesQueryParams = {})
     ? `${PLATFORM_ENDPOINTS.games}?${query.toString()}`
     : PLATFORM_ENDPOINTS.games;
 
-  const data = await apiGet<PlatformGame[]>(endpoint);
+  const token = getAuthTokenIfAvailable();
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const data = await apiFetch<PlatformGame[]>(endpoint, {
+    method: 'GET',
+    headers,
+  });
   return data || [];
 }
 

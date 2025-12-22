@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useKeycloak } from '@react-keycloak/web';
 import {
   fetchGames,
   fetchGameById,
@@ -60,6 +61,8 @@ export function useGames() {
  * /api/platform/games
  */
 export function usePlatformGames(filters: PlatformGamesFilters = {}) {
+  const { keycloak, initialized } = useKeycloak();
+
   const {
     data: games = [],
     isLoading,
@@ -71,8 +74,10 @@ export function usePlatformGames(filters: PlatformGamesFilters = {}) {
       'platformGames',
       filters.searchQuery || '',
       (filters.filterBy || []).join(','),
+      keycloak.authenticated ? 'auth' : 'anon',
     ],
     queryFn: () => fetchPublishedGames(filters),
+    enabled: initialized,
   });
 
   return {

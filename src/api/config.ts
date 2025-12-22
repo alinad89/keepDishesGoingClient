@@ -66,6 +66,10 @@ export function getAuthToken(): string | null {
   return null;
 }
 
+export function getAuthTokenIfAvailable(): string | null {
+  return keycloak.token || null;
+}
+
 export function setAuthToken(token: string): void {
   console.warn('[API Config] setAuthToken is deprecated - use Keycloak for authentication');
   localStorage.setItem('auth_token', token);

@@ -117,7 +117,11 @@ function GamesPage() {
                     {game.priceAmount > 0 ? `$${game.priceAmount}` : 'Free'}
                   </span>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    {game.priceAmount > 0 ? (
+                    {game.owned ? (
+                      <Button variant="small" disabled>
+                        Owned
+                      </Button>
+                    ) : game.priceAmount > 0 ? (
                       <PaymentButton gameId={game.id} variant="small">
                         Aquire
                       </PaymentButton>

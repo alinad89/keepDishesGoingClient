@@ -43,6 +43,7 @@ export function useAddGameToLibrary() {
         mutationFn: (request) => addGameToLibrary(request),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ["gameLibrary"]});
+            queryClient.invalidateQueries({queryKey: ["platformGames"]});
         }
     })
     return {
