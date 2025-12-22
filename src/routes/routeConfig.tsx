@@ -13,6 +13,7 @@ import EditGamePage from '../pages/EditGamePage';
 import AuthLanding from '../pages/AuthLanding';
 import AuthCallback from '../pages/AuthCallback';
 import GameLibraryPage from "../pages/GameLibraryPage.tsx";
+import GameHistoryPage from '../pages/GameHistoryPage';
 
 export interface RouteConfig {
   path: string;
@@ -97,5 +98,9 @@ export const publicRoutes: PublicRouteConfig[] = [
   {
     path: '/library',
     element: <GameLibraryPage />
+  },
+  {
+    path: '/game-history',
+    element: <GameHistoryPage />
   }
 ];

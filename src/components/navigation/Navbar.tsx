@@ -41,6 +41,10 @@ function Navbar() {
     { path: '/developer', label: 'Developers' },
   ]
 
+  if (keycloak.authenticated) {
+    navLinks.splice(3, 0, { path: '/game-history', label: 'Game History' })
+  }
+
   // Add Game Management link for admins and developers
   if (isAdmin || isDeveloper) {
     navLinks.push({ path: '/developer/games', label: isAdmin ? 'Manage Games (Admin)' : 'My Games' })
