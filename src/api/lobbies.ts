@@ -2,7 +2,6 @@ import type {
   CreateLobbyRequest,
   CreateLobbyResponse,
   ChangeLobbyStatusRequest,
-  PlayerResponse,
   MyLobbyResponse,
   MyLobbyBackendResponse,
   LobbyInvitation,
@@ -29,14 +28,6 @@ export type {
   CreateLobbyInvitationRequest,
   CreateLobbyInvitationResponse,
 };
-
-/**
- * Register a player
- * POST /api/players
- */
-export async function registerPlayer(): Promise<PlayerResponse> {
-  return await apiPost<PlayerResponse>(PLATFORM_ENDPOINTS.players);
-}
 
 /**
  * Create a new lobby

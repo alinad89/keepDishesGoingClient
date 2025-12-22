@@ -6,7 +6,6 @@ import { PageContainer, Grid } from '../components/common';
 import { useGames } from '../hooks/useGames';
 import {
   useCreateLobby,
-  useRegisterPlayer,
   useMyLobby,
   useSendLobbyInvitation,
   useMyLobbyInvitations,
@@ -15,6 +14,7 @@ import {
   useLeaveLobby,
   useAllPlayers,
 } from '../hooks/useLobbies';
+import { useRegisterPlayer } from '../hooks/useRegisterPlayer';
 import { useAuth } from '../hooks/useAuth';
 import { useGameSessionWebSocket, type ExternalSessionMessage } from '../hooks/useGameSessionWebSocket';
 

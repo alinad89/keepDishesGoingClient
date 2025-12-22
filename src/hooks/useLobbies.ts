@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createLobby,
   changeLobbyStatus,
-  registerPlayer,
   getMyLobby,
   leaveLobby,
   sendLobbyInvitation,
@@ -29,30 +28,6 @@ export type {
   LobbyInvitation,
   CreateLobbyInvitationRequest,
 };
-
-/**
- * Hook to register a player
- * POST /api/players
- */
-export function useRegisterPlayer() {
-  const {
-    mutate,
-    mutateAsync,
-    isPending,
-    isError,
-    error,
-  } = useMutation<{ id: string }, Error, void>({
-    mutationFn: () => registerPlayer(),
-  });
-
-  return {
-    registerPlayer: mutate,
-    registerPlayerAsync: mutateAsync,
-    loading: isPending,
-    error: error instanceof ApiError ? error : null,
-    isError,
-  };
-}
 
 /**
  * Hook to create a new lobby
