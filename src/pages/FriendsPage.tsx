@@ -4,8 +4,8 @@ import Card from '../components/ui/Card'
 import Section from '../components/ui/Section'
 import { useFriends, useFriendRequests, useSendFriendRequest, useAcceptFriendRequest, useSearchPlayers, useRemoveFriend, type Player } from '../hooks/useFriends'
 import { SearchInput, Grid, EmptyState, PageContainer } from '../components/common'
-import { useRegisterPlayer } from '../hooks/useLobbies'
 import { useAuth } from '../hooks/useAuth'
+import {useRegisterPlayer} from "../hooks/useRegisterPlayer.ts";
 
 function FriendsPage() {
   const [searchQuery, setSearchQuery] = useState('')
