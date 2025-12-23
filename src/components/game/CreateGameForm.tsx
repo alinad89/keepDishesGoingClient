@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Box, Alert } from '@mui/material';
 import type { CreateGameRequest } from '../../types/game.types';
 import { useCreateGame } from '../../hooks/useGames';
@@ -175,11 +176,14 @@ export function CreateGameForm() {
     };
 
     try {
-      const response = await createGameAsync(request);
-      alert(`Game "${data.name}" created successfully with key: ${response.key}`);
+      await createGameAsync(request);
+      toast.success(`Game "${data.name}" created successfully!`, {
+        duration: 5000,
+      });
       navigate('/developer/dashboard');
     } catch (err) {
       console.error('Failed to create game:', err);
+      toast.error('Failed to create game. Please try again.');
     }
   };
 

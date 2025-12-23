@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import Section from '../components/Section';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { PageContainer, Grid } from '../components/common';
-import { useGames } from '../hooks/useGames';
+import { usePlatformGames } from '../hooks/usePlatformGames';
+import { ApiError } from '../api/config';
 import {
   useCreateLobby,
   useMyLobby,
@@ -11,15 +14,17 @@ import {
   useMyLobbyInvitations,
   useAcceptLobbyInvitation,
   useChangeLobbyStatus,
+  useChangeLobbyAiType,
   useLeaveLobby,
   useAllPlayers,
+  type LobbyMode,
 } from '../hooks/useLobbies';
 import { useRegisterPlayer } from '../hooks/useRegisterPlayer';
 import { useAuth } from '../hooks/useAuth';
 import { useGameSessionWebSocket, type ExternalSessionMessage } from '../hooks/useGameSessionWebSocket';
 
 function LobbyPage() {
-  const { games, loading: gamesLoading } = useGames();
+  const { games, loading: gamesLoading } = usePlatformGames();
   const { createLobbyAsync, loading: creatingLobby, error: lobbyError } = useCreateLobby();
   const { registerPlayerAsync } = useRegisterPlayer();
   const { lobby, loading: lobbyLoading, error: lobbyFetchError, refetch: refetchLobby } = useMyLobby();
@@ -27,6 +32,7 @@ function LobbyPage() {
   const { acceptInvitationAsync, loading: acceptingInvitation } = useAcceptLobbyInvitation();
   const { sendInvitationAsync, loading: sendingInvitation } = useSendLobbyInvitation();
   const { changeLobbyStatusAsync, loading: startingGame } = useChangeLobbyStatus();
+  const { changeLobbyAiTypeAsync, loading: changingMode } = useChangeLobbyAiType();
   const { leaveLobbyAsync, loading: leavingLobby } = useLeaveLobby();
   const { players: allPlayers, loading: playersLoading } = useAllPlayers();
   const { isAuthenticated, userEmail, username } = useAuth();
@@ -56,6 +62,9 @@ function LobbyPage() {
   const [sessionLink, setSessionLink] = useState<string | null>(null);
   const [externalSession, setExternalSession] = useState<ExternalSessionMessage | null>(null);
   const [sessionSocketError, setSessionSocketError] = useState<string | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showModeDialog, setShowModeDialog] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<LobbyMode>('PVP');
 
   const previousLobbyStatusRef = useRef<string | null>(null);
   const playerRegistrationAttempted = useRef(false);
@@ -64,11 +73,28 @@ function LobbyPage() {
   useEffect(() => {
     if (isAuthenticated && !playerRegistrationAttempted.current) {
       playerRegistrationAttempted.current = true;
-      registerPlayerAsync().catch(() => {
-        // Ignore errors - user might already be registered
-      });
+      console.log('[LobbyPage] Attempting to register player...');
+      registerPlayerAsync()
+        .then(() => {
+          console.log('[LobbyPage] Player registered successfully');
+          // Wait a bit for the event to be processed and projection to be created
+          setTimeout(() => {
+            console.log('[LobbyPage] Refetching lobby after player registration...');
+            refetchLobby();
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error('[LobbyPage] Player registration error:', error);
+          const apiError = error as ApiError;
+          // Only show error if it's not a 409 (already registered)
+          if (apiError?.status !== 409) {
+            toast.error(`Failed to register as player: ${apiError?.apiMessage || 'Unknown error'}`);
+          } else {
+            console.log('[LobbyPage] Player already registered');
+          }
+        });
     }
-  }, [isAuthenticated, registerPlayerAsync]);
+  }, [isAuthenticated, registerPlayerAsync, refetchLobby]);
 
   useEffect(() => {
     if (!lobby) {
@@ -142,45 +168,71 @@ function LobbyPage() {
 
   const handleCreateLobby = async (gameId: string) => {
     if (!isAuthenticated) {
-      alert('Please login to create a lobby');
+      toast.error('Please login to create a lobby');
       return;
     }
 
     try {
       setSelectedGameId(gameId);
       await createLobbyAsync({ gameId });
+      setShowModeDialog(true);
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       const errorMessage = apiError?.apiMessage || 'Failed to create lobby';
 
       if (errorMessage.includes('already has a lobby')) {
-        alert('You already have an active lobby. Please leave your current lobby first before creating a new one.');
+        toast.error('You already have an active lobby. Please leave your current lobby first before creating a new one.', {
+          duration: 5000,
+        });
       } else {
-        alert(`Failed to create lobby: ${errorMessage}`);
+        toast.error(`Failed to create lobby: ${errorMessage}`);
       }
+    }
+  };
+
+  const handleModeConfirm = async () => {
+    try {
+      await changeLobbyAiTypeAsync({ desiredMode: selectedMode });
+      toast.success('Lobby mode set successfully!');
+      setShowModeDialog(false);
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast.error(`Failed to set lobby mode: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
 
   const handleAcceptInvitation = async (invitationId: string) => {
     try {
       await acceptInvitationAsync(invitationId);
+      toast.success('Invitation accepted!');
     } catch (error) {
-      alert('Failed to accept invitation');
+      const apiError = error as ApiError;
+      const errorMessage = apiError?.apiMessage || apiError?.message || 'Failed to accept invitation';
+      console.error('[LobbyPage] Failed to accept invitation:', error);
+      toast.error(`Failed to accept invitation: ${errorMessage}`);
     }
   };
 
   const handleInvitePlayer = async (playerId: string) => {
     if (!lobby) return;
 
+    console.log('[LobbyPage] Sending invitation:', {
+      receiver: playerId,
+      lobby: lobby.lobbyId,
+      lobbyObject: lobby
+    });
+
     try {
       await sendInvitationAsync({
         receiver: playerId,
         lobby: lobby.lobbyId,
       });
-      alert('Invitation sent!');
+      toast.success('Invitation sent!');
       setShowInviteDialog(false);
     } catch (error) {
-      alert('Failed to send invitation');
+      console.error('[LobbyPage] Invitation error:', error);
+      const apiError = error as ApiError;
+      toast.error(`Failed to send invitation: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
 
@@ -192,22 +244,29 @@ function LobbyPage() {
       setExternalSession(null);
       await changeLobbyStatusAsync({ action: 'START_GAME' });
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       setWaitingForSession(false);
-      alert(`Failed to start game: ${apiError?.apiMessage || 'Unknown error'}`);
+      toast.error(`Failed to start game: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
 
-  const handleLeaveLobby = async () => {
-    if (!confirm('Are you sure you want to leave this lobby?')) {
-      return;
-    }
+  const handleLeaveLobby = () => {
+    console.log('[LobbyPage] Leave lobby button clicked');
+    console.log('[LobbyPage] Current showLeaveConfirm:', showLeaveConfirm);
+    setShowLeaveConfirm(true);
+    console.log('[LobbyPage] Set showLeaveConfirm to true');
+  };
 
+  const confirmLeaveLobby = async () => {
+    console.log('[LobbyPage] Confirm leave lobby clicked');
+    setShowLeaveConfirm(false);
     try {
       await leaveLobbyAsync();
+      toast.success('You left the lobby');
     } catch (error) {
-      const apiError = error as any;
-      alert(`Failed to leave lobby: ${apiError?.apiMessage || 'Unknown error'}`);
+      const apiError = error as ApiError;
+      console.error('[LobbyPage] Failed to leave lobby:', error);
+      toast.error(`Failed to leave lobby: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
 
@@ -218,27 +277,185 @@ function LobbyPage() {
     });
   };
 
+  // Helper function to render mode dialog
+  const renderModeDialog = () => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }}>
+      <div style={{
+        background: 'var(--card-bg)',
+        border: '3px solid var(--accent)',
+        borderRadius: '12px',
+        padding: '2.5rem',
+        maxWidth: '500px',
+        width: '90%',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
+      }}>
+        <h2 style={{
+          color: 'var(--accent)',
+          marginBottom: '1.5rem',
+          fontSize: '1.8rem',
+          textAlign: 'center'
+        }}>
+          Select Lobby Mode
+        </h2>
+        <p style={{
+          color: 'var(--text-secondary)',
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
+          Choose the game mode for your lobby
+        </p>
+
+        {/* Mode Options */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '1rem',
+            background: selectedMode === 'PVP' ? 'var(--accent)' : 'var(--bg)',
+            border: `2px solid ${selectedMode === 'PVP' ? 'var(--accent)' : 'var(--card-border)'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}>
+            <input
+              type="radio"
+              name="lobbyMode"
+              value="PVP"
+              checked={selectedMode === 'PVP'}
+              onChange={(e) => setSelectedMode(e.target.value as LobbyMode)}
+              style={{ marginRight: '1rem' }}
+            />
+            <div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Player vs Player (PVP)</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Play against other human players
+              </div>
+            </div>
+          </label>
+
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '1rem',
+            background: selectedMode === 'PVE_WITH_ML' ? 'var(--accent)' : 'var(--bg)',
+            border: `2px solid ${selectedMode === 'PVE_WITH_ML' ? 'var(--accent)' : 'var(--card-border)'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}>
+            <input
+              type="radio"
+              name="lobbyMode"
+              value="PVE_WITH_ML"
+              checked={selectedMode === 'PVE_WITH_ML'}
+              onChange={(e) => setSelectedMode(e.target.value as LobbyMode)}
+              style={{ marginRight: '1rem' }}
+            />
+            <div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Player vs AI (Machine Learning)</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Play against an ML-powered AI opponent
+              </div>
+            </div>
+          </label>
+
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '1rem',
+            background: selectedMode === 'PVE_WITH_MCTS' ? 'var(--accent)' : 'var(--bg)',
+            border: `2px solid ${selectedMode === 'PVE_WITH_MCTS' ? 'var(--accent)' : 'var(--card-border)'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}>
+            <input
+              type="radio"
+              name="lobbyMode"
+              value="PVE_WITH_MCTS"
+              checked={selectedMode === 'PVE_WITH_MCTS'}
+              onChange={(e) => setSelectedMode(e.target.value as LobbyMode)}
+              style={{ marginRight: '1rem' }}
+            />
+            <div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Player vs AI (MCTS)</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Play against a Monte Carlo Tree Search AI opponent
+              </div>
+            </div>
+          </label>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          justifyContent: 'flex-end'
+        }}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowModeDialog(false)}
+            disabled={changingMode}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleModeConfirm}
+            disabled={changingMode}
+          >
+            {changingMode ? 'Setting Mode...' : 'Confirm'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (!isAuthenticated) {
     return (
-      <PageContainer>
-        <Section
-          title="Game Lobby"
-          subtitle="Please login to create or join lobbies"
-          centered
-        />
-      </PageContainer>
+      <>
+        <PageContainer>
+          <Section
+            title="Game Lobby"
+            subtitle="Please login to create or join lobbies"
+            centered
+          />
+        </PageContainer>
+        {/* Lobby Mode Selection Dialog */}
+        {showModeDialog && renderModeDialog()}
+      </>
     );
   }
 
   if (gamesLoading || lobbyLoading) {
     return (
-      <PageContainer>
-        <Section
-          title="Game Lobby"
-          subtitle="Loading..."
-          centered
-        />
-      </PageContainer>
+      <>
+        <PageContainer>
+          <Section
+            title="Game Lobby"
+            subtitle="Loading..."
+            centered
+          />
+        </PageContainer>
+        {/* Lobby Mode Selection Dialog */}
+        {showModeDialog && renderModeDialog()}
+      </>
     );
   }
 
@@ -251,6 +468,7 @@ function LobbyPage() {
 
     if (waitingForSession) {
       return (
+        <>
         <PageContainer>
           <Section
             title={`Starting ${lobby.game.name}`}
@@ -289,14 +507,32 @@ function LobbyPage() {
               </div>
             </div>
           </Section>
+
+          <ConfirmDialog
+            open={showLeaveConfirm}
+            title="Leave Lobby"
+            message="Are you sure you want to leave this lobby? You will need to be invited again to rejoin."
+            confirmText="Leave"
+            cancelText="Stay"
+            onConfirm={confirmLeaveLobby}
+            onCancel={() => {
+              console.log('[LobbyPage] Cancel clicked in dialog');
+              setShowLeaveConfirm(false);
+            }}
+            variant="warning"
+          />
         </PageContainer>
+        {/* Lobby Mode Selection Dialog */}
+        {showModeDialog && renderModeDialog()}
+        </>
       );
     }
 
     return (
+      <>
       <PageContainer>
         <Section
-          title={`Lobby: ${lobby.game.name}`}
+          title={`Lobby: ${lobby.game?.name || 'Loading...'}`}
           subtitle={`Status: ${lobby.status}`}
           centered
         >
@@ -528,12 +764,15 @@ function LobbyPage() {
                 {/* Actions (only for owner) */}
                 {isOwner && (
                   <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                    <Button
-                      variant="primary"
-                      onClick={() => setShowInviteDialog(!showInviteDialog)}
-                    >
-                      Invite Player
-                    </Button>
+                    {/* Show invite button only for PVP mode */}
+                    {lobby.mode === 'PVP' && (
+                      <Button
+                        variant="primary"
+                        onClick={() => setShowInviteDialog(!showInviteDialog)}
+                      >
+                        Invite Player
+                      </Button>
+                    )}
                     <Button
                       variant="primary"
                       onClick={handleStartGame}
@@ -630,7 +869,7 @@ function LobbyPage() {
                 )}
 
                 {/* Invite Dialog */}
-                {showInviteDialog && isOwner && (
+                {showInviteDialog && isOwner && lobby.mode === 'PVP' && (
                   <div style={{
                     padding: '1.5rem',
                     background: 'var(--card-bg)',
@@ -738,13 +977,31 @@ function LobbyPage() {
             )}
           </div>
         </Section>
+
+        <ConfirmDialog
+          open={showLeaveConfirm}
+          title="Leave Lobby"
+          message="Are you sure you want to leave this lobby? You will need to be invited again to rejoin."
+          confirmText="Leave"
+          cancelText="Stay"
+          onConfirm={confirmLeaveLobby}
+          onCancel={() => {
+            console.log('[LobbyPage] Cancel clicked in dialog');
+            setShowLeaveConfirm(false);
+          }}
+          variant="warning"
+        />
       </PageContainer>
+      {/* Lobby Mode Selection Dialog */}
+      {showModeDialog && renderModeDialog()}
+      </>
     );
   }
 
   // Show invitations
   if (invitations.length > 0) {
     return (
+      <>
       <PageContainer>
         <Section
           title="Lobby Invitations"
@@ -776,7 +1033,7 @@ function LobbyPage() {
                     {invitation.sender.username} invited you to a lobby
                   </p>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                    {new Date(invitation.timestamp).toLocaleString()}
+                    {new Date(invitation.issuedAt).toLocaleString()}
                   </p>
                 </div>
                 <Button
@@ -790,18 +1047,54 @@ function LobbyPage() {
             ))}
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
               Or create a new lobby:
             </p>
           </div>
+
+          {games.length === 0 ? (
+            <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
+              No online games available yet
+            </p>
+          ) : (
+            <Grid>
+              {games.map((game) => (
+                <Card
+                  key={game.id}
+                  title={game.name}
+                  description={game.shortDescription}
+                >
+                  <div style={{
+                    marginTop: '1.5rem',
+                    paddingTop: '1.5rem',
+                    borderTop: '2px solid var(--card-border)'
+                  }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => handleCreateLobby(game.id)}
+                      disabled={creatingLobby && selectedGameId === game.id}
+                    >
+                      {creatingLobby && selectedGameId === game.id
+                        ? 'Creating...'
+                        : 'Create Lobby'}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </Grid>
+          )}
         </Section>
       </PageContainer>
+      {/* Lobby Mode Selection Dialog */}
+      {showModeDialog && renderModeDialog()}
+      </>
     );
   }
 
   // Show game selection (default view)
   return (
+    <>
     <PageContainer>
       <Section
         title="Game Lobby"
@@ -844,13 +1137,13 @@ function LobbyPage() {
           </div>
         )}
 
-        {games.filter(game => game.status === 'ONLINE').length === 0 ? (
+        {games.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
             No online games available yet
           </p>
         ) : (
           <Grid>
-            {games.filter(game => game.status === 'ONLINE').map((game) => (
+            {games.map((game) => (
               <Card
                 key={game.id}
                 title={game.name}
@@ -876,7 +1169,24 @@ function LobbyPage() {
           </Grid>
         )}
       </Section>
+
+      <ConfirmDialog
+        open={showLeaveConfirm}
+        title="Leave Lobby"
+        message="Are you sure you want to leave this lobby? You will need to be invited again to rejoin."
+        confirmText="Leave"
+        cancelText="Stay"
+        onConfirm={confirmLeaveLobby}
+        onCancel={() => {
+          console.log('[LobbyPage] Cancel clicked in dialog');
+          setShowLeaveConfirm(false);
+        }}
+        variant="warning"
+      />
     </PageContainer>
+    {/* Lobby Mode Selection Dialog */}
+    {showModeDialog && renderModeDialog()}
+    </>
   );
 }
 

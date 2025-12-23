@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import WinterToggleButton from '../ui/WinterToggleButton'
 import './Navbar.css'
 import './DeveloperNavbar.css'
 
@@ -28,8 +29,13 @@ function DeveloperNavbar() {
             </li>
           </ul>
 
+          {/* Winter Mode Toggle */}
+          <div style={{ marginLeft: 'auto', marginRight: '1rem' }}>
+            <WinterToggleButton />
+          </div>
+
           {/* User Info and Auth Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>
               {username || userEmail || 'User'}
             </span>
@@ -47,19 +53,8 @@ function DeveloperNavbar() {
             >
               Account
             </button>
-            <button
-              onClick={logout}
-              style={{
-                padding: '8px 16px',
-                background: '#f44336',
-                border: 'none',
-                borderRadius: '4px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px',
-              }}
-            >
-              Log Out
+            <button onClick={logout} className="btn-logout">
+              Logout
             </button>
           </div>
         </div>

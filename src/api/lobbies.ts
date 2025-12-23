@@ -2,12 +2,15 @@ import type {
   CreateLobbyRequest,
   CreateLobbyResponse,
   ChangeLobbyStatusRequest,
+  ChangeLobbyModeRequest,
   MyLobbyResponse,
   MyLobbyBackendResponse,
   LobbyInvitation,
   CreateLobbyInvitationRequest,
   CreateLobbyInvitationResponse,
   Player,
+  LobbyMode,
+  BackendAiType,
 } from '../types/api';
 import {
   PLATFORM_ENDPOINTS,
@@ -23,10 +26,12 @@ export type {
   CreateLobbyRequest,
   CreateLobbyResponse,
   ChangeLobbyStatusRequest,
+  ChangeLobbyModeRequest,
   MyLobbyResponse,
   LobbyInvitation,
   CreateLobbyInvitationRequest,
   CreateLobbyInvitationResponse,
+  LobbyMode,
 };
 
 /**
@@ -40,6 +45,24 @@ export async function createLobby(
     PLATFORM_ENDPOINTS.lobbies,
     request
   );
+}
+
+/**
+ * Map backend AiType to frontend LobbyMode
+ */
+function mapAiTypeToLobbyMode(aiType?: BackendAiType): LobbyMode | undefined {
+  if (!aiType) return undefined;
+
+  switch (aiType) {
+    case 'NONE':
+      return 'PVP';
+    case 'MCTS':
+      return 'PVE_WITH_MCTS';
+    case 'ML':
+      return 'PVE_WITH_ML';
+    default:
+      return undefined;
+  }
 }
 
 /**
@@ -59,10 +82,11 @@ export async function getMyLobby(): Promise<MyLobbyResponse | null> {
     const frontendResponse: MyLobbyResponse = {
       lobbyId: result.lobbyId,
       status: result.status,
+      mode: mapAiTypeToLobbyMode(result.aiType),
       game: {
-        id: result.gameId,
-        name: result.gameName,
-        thumbnailUrl: undefined, // Not provided by backend
+        id: result.game.id,
+        name: result.game.name,
+        thumbnailUrl: result.game.thumbnailUrl,
       },
       otherParticipants: result.otherParticipants || [],
       isOwner: result.isOwner ?? false,
@@ -85,6 +109,16 @@ export async function changeLobbyStatus(
   request: ChangeLobbyStatusRequest
 ): Promise<void> {
   return await apiPatch<void>(PLATFORM_ENDPOINTS.lobbyStatus, request);
+}
+
+/**
+ * Change lobby AI type/mode (PvP, PvE with ML, PvE with MCTS)
+ * PATCH /api/lobbies/me/ai-type
+ */
+export async function changeLobbyAiType(
+  request: ChangeLobbyModeRequest
+): Promise<void> {
+  return await apiPatch<void>(PLATFORM_ENDPOINTS.lobbyAiType, request);
 }
 
 /**

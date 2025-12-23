@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
+import Snowfall from 'react-snowfall'
 import Navbar from './components/navigation/Navbar'
 import { ChatBox } from './components/ChatBox'
 import { authRoutes, developerRoutes, publicRoutes } from './routes/routeConfig'
@@ -13,13 +15,56 @@ import {CreateGamePage} from "./pages/CreateGamePage.tsx";
 import GameDetailsPage from "./pages/GameDetailsPage.tsx";
 import EditGamePage from './pages/EditGamePage.tsx'
 import RagManagementPage from './pages/RagManagementPage'
+import { WinterModeProvider, useWinterMode } from './contexts/WinterModeContext'
 
-function App() {
-  // Note: User registration is now handled in AuthCallback page
-  // based on their role (developer vs player)
+function AppContent() {
+  const { isWinterMode } = useWinterMode();
+
+  console.log('[App] Winter mode:', isWinterMode);
 
   return (
     <BrowserRouter>
+      {isWinterMode && (
+        <>
+          {console.log('[App] Rendering Snowfall')}
+          <Snowfall
+            snowflakeCount={200}
+            style={{
+              position: 'fixed',
+              width: '100vw',
+              height: '100vh',
+              zIndex: 9999,
+              pointerEvents: 'none'
+            }}
+          />
+        </>
+      )}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'var(--card-bg)',
+            color: 'var(--text)',
+            border: '2px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '16px',
+            fontSize: '14px',
+          },
+          success: {
+            iconTheme: {
+              primary: 'var(--accent)',
+              secondary: 'var(--card-bg)',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ff6b6b',
+              secondary: 'var(--card-bg)',
+            },
+          },
+        }}
+      />
       <div className="app">
         <Routes>
           {/* Authentication Routes */}
@@ -93,6 +138,14 @@ function App() {
         <ChatBox />
       </div>
     </BrowserRouter>
+  )
+}
+
+function App() {
+  return (
+    <WinterModeProvider>
+      <AppContent />
+    </WinterModeProvider>
   )
 }
 

@@ -191,6 +191,12 @@ export interface ChangeLobbyStatusRequest {
   action: LobbyStatusAction;
 }
 
+export type LobbyMode = 'PVE_WITH_ML' | 'PVE_WITH_MCTS' | 'PVP';
+
+export interface ChangeLobbyModeRequest {
+  desiredMode: LobbyMode;
+}
+
 export interface PlayerResponse {
   id: string;
 }
@@ -204,12 +210,13 @@ export interface LobbyInvitation {
   sender: PlayerInfo;
   receiver: PlayerInfo;
   lobbyId: string;
-  timestamp: string;
+  issuedAt: string;
 }
 
 export interface PlayerInfo {
   id: string;
   username: string;
+  email: string;
 }
 
 export interface CreateLobbyInvitationRequest {
@@ -221,13 +228,20 @@ export interface CreateLobbyInvitationResponse {
   id: string;
 }
 
+// Backend AiType enum (from Java backend)
+export type BackendAiType = 'NONE' | 'MCTS' | 'ML';
+
 // Backend response from GET /api/lobbies/me
 export interface MyLobbyBackendResponse {
   lobbyId: string;
-  key: string;
-  gameId: string;
-  gameName: string;
+  lobbyKey: string;
   status: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  aiType?: BackendAiType;
+  game: {
+    id: string;
+    name: string;
+    thumbnailUrl?: string;
+  };
   otherParticipants: PlayerInfo[];
   isOwner: boolean;
   gameSessionLink?: string;
@@ -238,6 +252,7 @@ export interface MyLobbyBackendResponse {
 export interface MyLobbyResponse {
   lobbyId: string;
   status: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  mode?: LobbyMode;
   game: {
     id: string;
     name: string;

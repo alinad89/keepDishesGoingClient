@@ -11,8 +11,8 @@ declare module '@stomp/stompjs' {
   }
 
   export interface ClientConfig {
-    webSocketFactory?: () => any;
     connectHeaders?: Record<string, string>;
+    webSocketFactory?: () => WebSocket | unknown;
     debug?: (message: string) => void;
     reconnectDelay?: number;
     heartbeatIncoming?: number;
