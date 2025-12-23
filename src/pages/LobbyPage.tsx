@@ -6,6 +6,7 @@ import Card from '../components/Card';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { PageContainer, Grid } from '../components/common';
 import { usePlatformGames } from '../hooks/usePlatformGames';
+import { ApiError } from '../api/config';
 import {
   useCreateLobby,
   useRegisterPlayer,
@@ -84,7 +85,7 @@ function LobbyPage() {
         })
         .catch((error) => {
           console.error('[LobbyPage] Player registration error:', error);
-          const apiError = error as any;
+          const apiError = error as ApiError;
           // Only show error if it's not a 409 (already registered)
           if (apiError?.status !== 409) {
             toast.error(`Failed to register as player: ${apiError?.apiMessage || 'Unknown error'}`);
@@ -176,7 +177,7 @@ function LobbyPage() {
       await createLobbyAsync({ gameId });
       setShowModeDialog(true);
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       const errorMessage = apiError?.apiMessage || 'Failed to create lobby';
 
       if (errorMessage.includes('already has a lobby')) {
@@ -195,7 +196,7 @@ function LobbyPage() {
       toast.success('Lobby mode set successfully!');
       setShowModeDialog(false);
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       toast.error(`Failed to set lobby mode: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
@@ -205,7 +206,7 @@ function LobbyPage() {
       await acceptInvitationAsync(invitationId);
       toast.success('Invitation accepted!');
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       const errorMessage = apiError?.apiMessage || apiError?.message || 'Failed to accept invitation';
       console.error('[LobbyPage] Failed to accept invitation:', error);
       toast.error(`Failed to accept invitation: ${errorMessage}`);
@@ -230,7 +231,7 @@ function LobbyPage() {
       setShowInviteDialog(false);
     } catch (error) {
       console.error('[LobbyPage] Invitation error:', error);
-      const apiError = error as any;
+      const apiError = error as ApiError;
       toast.error(`Failed to send invitation: ${apiError?.apiMessage || 'Unknown error'}`);
     }
   };
@@ -243,7 +244,7 @@ function LobbyPage() {
       setExternalSession(null);
       await changeLobbyStatusAsync({ action: 'START_GAME' });
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       setWaitingForSession(false);
       toast.error(`Failed to start game: ${apiError?.apiMessage || 'Unknown error'}`);
     }
@@ -263,7 +264,7 @@ function LobbyPage() {
       await leaveLobbyAsync();
       toast.success('You left the lobby');
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       console.error('[LobbyPage] Failed to leave lobby:', error);
       toast.error(`Failed to leave lobby: ${apiError?.apiMessage || 'Unknown error'}`);
     }
@@ -460,10 +461,6 @@ function LobbyPage() {
 
   // Show active lobby if player is in one
   if (lobby) {
-    console.log('[LobbyPage] Current lobby data:', lobby);
-    console.log('[LobbyPage] Lobby mode:', lobby.mode);
-    console.log('[LobbyPage] Is PVP?:', lobby.mode === 'PVP');
-
     const sessionLinkToUse = sessionLink || lobby.gameSessionLink || null;
     const hasSessionInfo = Boolean(sessionLinkToUse || externalSession);
     const isGameStarted = lobby.status === 'IN_GAME' || hasSessionInfo;

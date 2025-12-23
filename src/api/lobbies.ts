@@ -87,10 +87,6 @@ export async function getMyLobby(): Promise<MyLobbyResponse | null> {
       return null;
     }
 
-    console.log('[API] Backend lobby response:', result);
-    console.log('[API] Backend aiType field:', result.aiType);
-    console.log('[API] Mapped mode:', mapAiTypeToLobbyMode(result.aiType));
-
     // Transform backend response to frontend format
     const frontendResponse: MyLobbyResponse = {
       lobbyId: result.lobbyId,
