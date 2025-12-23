@@ -29,6 +29,7 @@ export interface PlatformGame {
   tags: string[];
   version: string;
   priceAmount: number;
+  owned?: boolean;
 }
 
 export type DeploymentMode = 'url' | 'backend-zip';
