@@ -3,6 +3,7 @@ import { Client } from "@stomp/stompjs";
 import type { StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import type { ChatMessage } from "../types/chat.types";
+import { getAuthToken } from "../api/config";
 
 interface WebSocketMessage {
     chatId: string;
@@ -16,9 +17,9 @@ interface UseWebSocketOptions {
     onError?: (error: Event) => void;
 }
 
-// WebSocket base URL (without the /ws path - will be added by SockJS)
+// WebSocket base URL - use current origin to go through Vite proxy
 const WS_BASE_URL =
-    import.meta.env.VITE_WS_BASE_URL || "http://localhost:8082";
+    import.meta.env.VITE_WS_BASE_URL || window.location.origin;
 
 export function useWebSocket({
     enabled,
@@ -57,11 +58,25 @@ export function useWebSocket({
             return;
         }
 
+        // Prevent creating multiple connections
+        if (clientRef.current && clientRef.current.active) {
+            console.log('[WebSocket] Already connected, skipping new connection');
+            return;
+        }
+
         console.log('[WebSocket] Connecting to STOMP endpoint:', WS_BASE_URL + '/ws');
+
+        // Get auth token for WebSocket connection
+        const token = getAuthToken();
+        const connectHeaders: Record<string, string> = {};
+        if (token) {
+            connectHeaders['Authorization'] = `Bearer ${token}`;
+        }
 
         // Create STOMP client with SockJS
         const client = new Client({
             webSocketFactory: () => new SockJS(WS_BASE_URL + '/ws'),
+            connectHeaders,
             debug: (str) => {
                 console.log('[STOMP Debug]', str);
             },
@@ -77,7 +92,7 @@ export function useWebSocket({
             reconnectAttemptsRef.current = 0;
 
             // Subscribe to chat messages topic
-            const destination = `/ws/chats/${chatId}`;
+            const destination = `/topic/chats/${chatId}`;
             console.log('[WebSocket] Subscribing to:', destination);
 
             subscriptionRef.current = client.subscribe(destination, (message) => {
@@ -147,6 +162,8 @@ export function useWebSocket({
     }, [connect]);
 
     const disconnect = useCallback(() => {
+        console.log('[WebSocket] Disconnect called');
+
         if (reconnectTimeoutRef.current !== null) {
             clearTimeout(reconnectTimeoutRef.current);
             reconnectTimeoutRef.current = null;
@@ -154,13 +171,21 @@ export function useWebSocket({
 
         if (subscriptionRef.current) {
             console.log('[WebSocket] Unsubscribing from topic');
-            subscriptionRef.current.unsubscribe();
+            try {
+                subscriptionRef.current.unsubscribe();
+            } catch (error) {
+                console.error('[WebSocket] Error unsubscribing:', error);
+            }
             subscriptionRef.current = null;
         }
 
         if (clientRef.current) {
             console.log('[WebSocket] Disconnecting STOMP client');
-            clientRef.current.deactivate();
+            try {
+                clientRef.current.deactivate();
+            } catch (error) {
+                console.error('[WebSocket] Error deactivating client:', error);
+            }
             clientRef.current = null;
         }
 
@@ -178,7 +203,8 @@ export function useWebSocket({
         return () => {
             disconnect();
         };
-    }, [enabled, chatId, connect, disconnect]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [enabled, chatId]);
 
     return {
         isConnected,

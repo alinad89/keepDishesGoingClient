@@ -34,6 +34,7 @@ function Navbar() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
+    { path: "/library", label: 'Library' },
     { path: '/lobby', label: 'Lobby' },
     { path: '/invitations', label: 'My Invitations', badge: invitationCount > 0 ? invitationCount : undefined },
     { path: '/friends', label: 'Friends' },
@@ -44,6 +45,11 @@ function Navbar() {
   // Add Game Management link for admins and developers
   if (isAdmin || isDeveloper) {
     navLinks.push({ path: '/developer/games', label: isAdmin ? 'Manage Games (Admin)' : 'My Games' })
+  }
+
+  // Add RAG Management link for admins only
+  if (isAdmin) {
+    navLinks.push({ path: '/admin/rag', label: 'Modify RAG' })
   }
 
 

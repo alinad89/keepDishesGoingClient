@@ -3,6 +3,9 @@ import type {
   CreateMessageResponse,
   ChatListItem,
   Chat,
+  RagVaultContent,
+  UpdateRagVaultRequest,
+  UpdateRagVaultResponse,
 } from '../types/chat.types';
 import { CHATBOT_ENDPOINTS, apiPost, apiGet } from './config';
 
@@ -45,4 +48,22 @@ export async function sendMessageToChat(
     CHATBOT_ENDPOINTS.chatById(chatId),
     request
   );
+}
+
+/**
+ * Get RAG vault content (Admin only)
+ * GET /api/chats/rag-vault
+ */
+export async function getRagVault(): Promise<RagVaultContent> {
+  return apiGet<RagVaultContent>(CHATBOT_ENDPOINTS.ragVault);
+}
+
+/**
+ * Update RAG vault content (Admin only)
+ * POST /api/chats/rag-vault
+ */
+export async function updateRagVault(
+  request: UpdateRagVaultRequest
+): Promise<UpdateRagVaultResponse> {
+  return apiPost<UpdateRagVaultResponse>(CHATBOT_ENDPOINTS.ragVault, request);
 }

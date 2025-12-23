@@ -11,6 +11,7 @@ declare module '@stomp/stompjs' {
   }
 
   export interface ClientConfig {
+    connectHeaders?: Record<string, string>;
     webSocketFactory?: () => WebSocket | unknown;
     debug?: (message: string) => void;
     reconnectDelay?: number;
@@ -27,6 +28,7 @@ declare module '@stomp/stompjs' {
     subscribe(destination: string, callback: (message: IMessage) => void): StompSubscription;
     activate(): void;
     deactivate(): void;
+    active: boolean;
     onConnect?: (frame: IFrame) => void;
     onStompError?: (frame: IFrame) => void;
     onWebSocketClose?: (event: CloseEvent) => void;

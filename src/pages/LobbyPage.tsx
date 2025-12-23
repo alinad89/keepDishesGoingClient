@@ -9,7 +9,6 @@ import { usePlatformGames } from '../hooks/usePlatformGames';
 import { ApiError } from '../api/config';
 import {
   useCreateLobby,
-  useRegisterPlayer,
   useMyLobby,
   useSendLobbyInvitation,
   useMyLobbyInvitations,
@@ -20,6 +19,7 @@ import {
   useAllPlayers,
   type LobbyMode,
 } from '../hooks/useLobbies';
+import { useRegisterPlayer } from '../hooks/useRegisterPlayer';
 import { useAuth } from '../hooks/useAuth';
 import { useGameSessionWebSocket, type ExternalSessionMessage } from '../hooks/useGameSessionWebSocket';
 

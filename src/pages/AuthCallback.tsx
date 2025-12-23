@@ -5,6 +5,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useRegisterDeveloper } from '../hooks/useDevelopers';
 import { useRegisterAdministrator } from '../hooks/useAdministrators';
 import { isDeveloper, ROLES } from '../utils/keycloakRoles';
+import {useRegisterPlayer} from "../hooks/useRegisterPlayer.ts";
 
 // ========================================
 // Authentication Callback Page
@@ -36,6 +37,7 @@ export default function AuthCallback() {
   // Use the hooks to register developer/admin in backend
   const { registerDeveloperAsync } = useRegisterDeveloper();
   const { registerAdministratorAsync } = useRegisterAdministrator();
+  const { registerPlayer } = useRegisterPlayer();
 
   useEffect(() => {
     console.log('[AuthCallback] State:', {
@@ -118,6 +120,11 @@ export default function AuthCallback() {
           navigate('/developer/dashboard');
         }
       } else {
+        if (!alreadySynced) {
+          sessionStorage.setItem(syncKey, 'true');
+          registerPlayer();
+          console.log('[AuthCallback] Player registered, redirecting to games...');
+        }
         // User is a player - redirect to games page
         console.log('[AuthCallback] Player login, redirecting to games...');
         navigate('/games');

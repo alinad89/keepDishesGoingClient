@@ -192,6 +192,9 @@ function ManageGamesPage() {
               <Typography variant="body2" sx={(theme) => ({ mb: 2, color: theme.palette.text.primary })}>
                 {game.shortDescription}
               </Typography>
+              <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
+                Price: {game.priceAmount > 0 ? `$${game.priceAmount}` : 'Free'}
+              </Typography>
 
               {/* Status Badge */}
               {game.status && (

@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import { PageContainer } from '../components/common';
 import Section from '../components/Section';
 import Button from '../components/Button';
-import { useMyLobbyInvitations, useAcceptLobbyInvitation, useRegisterPlayer } from '../hooks/useLobbies';
+import { useMyLobbyInvitations, useAcceptLobbyInvitation } from '../hooks/useLobbies';
+import { useRegisterPlayer } from '../hooks/useRegisterPlayer';
 import { useAuth } from '../hooks/useAuth';
 
 function InvitationsPage() {

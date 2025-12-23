@@ -4,6 +4,7 @@ import type {
   CreateGameResponse,
   UpdateGameRequest,
   ChangeGameStatusRequest,
+  PlatformGame,
 } from '../types/game.types';
 import {
   DEVELOPER_ENDPOINTS,
@@ -12,7 +13,7 @@ import {
   apiPatch,
   apiDelete,
   apiPost,
-  USE_MOCK_API,
+  USE_MOCK_API, PLATFORM_ENDPOINTS,
 } from './config';
 
 // Re-export types for convenience
@@ -30,6 +31,34 @@ export type {
  */
 export async function fetchGames(): Promise<Game[]> {
   const data = await apiGet<Game[]>(DEVELOPER_ENDPOINTS.games);
+  return data || [];
+}
+
+/**
+ * Fetch all games for players
+ * GET /api/platform/games
+ */
+export interface PlatformGamesQueryParams {
+  searchQuery?: string;
+  filterBy?: string[];
+}
+
+export async function fetchPublishedGames(params: PlatformGamesQueryParams = {}): Promise<PlatformGame[]> {
+  const query = new URLSearchParams();
+
+  if (params.searchQuery) {
+    query.set('searchQuery', params.searchQuery);
+  }
+
+  if (params.filterBy && params.filterBy.length > 0) {
+    params.filterBy.forEach(tag => query.append('filterBy', tag));
+  }
+
+  const endpoint = query.toString()
+    ? `${PLATFORM_ENDPOINTS.games}?${query.toString()}`
+    : PLATFORM_ENDPOINTS.games;
+
+  const data = await apiGet<PlatformGame[]>(endpoint);
   return data || [];
 }
 
@@ -68,6 +97,7 @@ export async function createGame(
       tags: gameData.metadata.tags,
       version: gameData.metadata.version,
       url: gameData.metadata.url || `https://example.com/${gameKey}`,
+      priceAmount: gameData.metadata.priceUnits,
     };
 
     // Post to JSON Server as simple JSON
@@ -79,16 +109,13 @@ export async function createGame(
     };
   }
 
-  // Real API: Build FormData for multipart upload with metadata as JSON
+  // Real API: Build FormData for multipart upload with metadata blob
   const formData = new FormData();
 
-  // Add metadata as JSON blob
   const metadataBlob = new Blob([JSON.stringify(gameData.metadata)], {
     type: 'application/json',
   });
   formData.append('metadata', metadataBlob);
-
-  // Add required files
   formData.append('thumbnail', gameData.thumbnail);
   formData.append('coverImage', gameData.coverImage);
 

@@ -28,11 +28,14 @@ export const ADMIN_ENDPOINTS = {
 
 export const CHATBOT_ENDPOINTS = {
   platformInfo: '/platform/info',
+  register: '/chatbot-users',
   chats: '/chats',
   chatById: (id: string) => `/chats/${id}`,
+  ragVault: '/chats/rag-vault',
 } as const;
 
 export const PLATFORM_ENDPOINTS = {
+  games: "/platform/games",
   players: '/players',
   allPlayers: '/players',
   lobbies: '/lobbies',
@@ -41,6 +44,10 @@ export const PLATFORM_ENDPOINTS = {
   lobbyAiType: '/lobbies/me/ai-type',
   platformGames: '/platform/games',
   platformGameById: (id: string) => `/platform/games/${id}`,
+  gameLibrary: '/game-libraries/me',
+  addGameToLibrary: '/game-libraries/me/games',
+  addGameToFavourites: (gameId:string) =>`/game-libraries/me/games/${gameId}`,
+  paymentLinkGeneration: (gameId: string) => `/games/${gameId}/purchase-session`,
 } as const;
 
 export const SOCIAL_ENDPOINTS = {

@@ -163,6 +163,16 @@ function GameDetailsPage() {
                             variant="body2"
                             sx={{ fontWeight: 600, color: 'var(--text-color)' }}
                         >
+                            Price:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'var(--muted-text)' }}>
+                            {game.priceAmount > 0 ? `$${game.priceAmount}` : 'Free'}
+                        </Typography>
+
+                        <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, color: 'var(--text-color)' }}
+                        >
                             Game URL:
                         </Typography>
                         <Typography

@@ -115,6 +115,29 @@
   margin-bottom: 4px;
 }
 
+.chatbox-new-chat-tile {
+  justify-content: flex-start;
+  border: 1px dashed var(--card-border);
+}
+
+.chatbox-new-chat-tile:hover {
+  border-color: var(--accent);
+  background: var(--bg-color);
+}
+
+.chatbox-new-chat-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
 .chatbox-chat-item:hover:not(.chatbox-chat-item-active) {
   background: var(--bg-color);
 }
@@ -254,6 +277,40 @@
   color: var(--text-color);
   border-bottom-left-radius: 4px;
   border: 1px solid var(--card-border);
+}
+
+.chatbox-typing-indicator {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.chatbox-typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted-text);
+  opacity: 0.7;
+  animation: chatbox-typing-bounce 1s infinite ease-in-out;
+}
+
+.chatbox-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chatbox-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chatbox-typing-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 /* Input Area */

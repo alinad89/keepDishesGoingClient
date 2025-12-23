@@ -14,6 +14,7 @@ import ManageGamesPage from "./pages/ManageGamesPage.tsx";
 import {CreateGamePage} from "./pages/CreateGamePage.tsx";
 import GameDetailsPage from "./pages/GameDetailsPage.tsx";
 import EditGamePage from './pages/EditGamePage.tsx'
+import RagManagementPage from './pages/RagManagementPage'
 import { WinterModeProvider, useWinterMode } from './contexts/WinterModeContext'
 
 function AppContent() {
@@ -104,6 +105,18 @@ function AppContent() {
               <DeveloperDashboardLayout>
                 <EditGamePage />
               </DeveloperDashboardLayout>
+            </Protected>
+          } />
+
+          {/* Admin RAG Management Route - Admin only with main navbar */}
+          <Route path="/admin/rag" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <RagManagementPage />
+                </main>
+              </>
             </Protected>
           } />
 
