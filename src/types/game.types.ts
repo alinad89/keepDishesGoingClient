@@ -17,6 +17,35 @@ export interface Game {
   status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
+// ========================================
+// Platform Game Types (for players)
+// ========================================
+
+export interface PlatformGameAchievement {
+  id: string;
+  name: string;
+  iconUrl: string;
+  instructions: string;
+}
+
+export interface PlatformGame {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  coverImageUrl: string;
+  rules: string;
+  shortDescription: string;
+  tags: string[];
+  version: string;
+  url: string;
+}
+
+export interface PlatformGameDetails extends PlatformGame {
+  achievements: PlatformGameAchievement[];
+}
+
 export type DeploymentMode = 'url' | 'backend-zip';
 
 export interface GameMetadata {

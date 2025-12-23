@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { PageContainer } from '../components/common';
 import Section from '../components/Section';
 import Button from '../components/Button';
@@ -31,6 +32,7 @@ function InvitationsPage() {
 
     try {
       await acceptInvitationAsync(invitationId);
+      toast.success('Invitation accepted! Redirecting to lobby...');
       // Successfully accepted - navigate to lobby page
       setTimeout(() => {
         navigate('/lobby');
@@ -40,10 +42,10 @@ function InvitationsPage() {
       const errorMessage = apiError?.apiMessage || 'Failed to accept invitation';
 
       if (errorMessage.includes('already accepted')) {
-        alert('This invitation has already been accepted. Redirecting to lobby...');
+        toast.error('This invitation has already been accepted. Redirecting to lobby...');
         navigate('/lobby');
       } else {
-        alert(`Failed to accept invitation: ${errorMessage}`);
+        toast.error(`Failed to accept invitation: ${errorMessage}`);
       }
     } finally {
       setAcceptingId(null);
@@ -150,7 +152,7 @@ function InvitationsPage() {
                     color: 'var(--text-secondary)',
                     fontSize: '0.9rem'
                   }}>
-                    {new Date(invitation.timestamp).toLocaleString()}
+                    {new Date(invitation.issuedAt).toLocaleString()}
                   </p>
                 </div>
                 <Button

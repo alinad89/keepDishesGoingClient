@@ -222,7 +222,7 @@
 .btn-logout {
     background: transparent;
     color: var(--text-color);
-    border: 2px solid var(--accent);
+    border: none;
 }
 
 .btn-logout:hover {

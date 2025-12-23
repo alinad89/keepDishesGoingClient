@@ -38,6 +38,9 @@ export const PLATFORM_ENDPOINTS = {
   lobbies: '/lobbies',
   myLobby: '/lobbies/me',
   lobbyStatus: '/lobbies/me/status',
+  lobbyAiType: '/lobbies/me/ai-type',
+  platformGames: '/platform/games',
+  platformGameById: (id: string) => `/platform/games/${id}`,
 } as const;
 
 export const SOCIAL_ENDPOINTS = {

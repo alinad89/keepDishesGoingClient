@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useKeycloak } from '@react-keycloak/web'
 import './Navbar.css'
 import {useMyLobbyInvitations} from "../../hooks/useLobbies.ts";
+import WinterToggleButton from '../ui/WinterToggleButton';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -99,6 +100,11 @@ function Navbar() {
               </li>
             ))}
           </ul>
+
+          {/* Winter Mode Toggle */}
+          <div style={{ marginRight: '1rem' }}>
+            <WinterToggleButton />
+          </div>
 
           {/* Authentication Button */}
           <div className="navbar-auth">

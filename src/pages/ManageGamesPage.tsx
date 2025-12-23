@@ -106,8 +106,9 @@ function ManageGamesPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: '95%', width: '100%', mx: 'auto', py: 6, px: 4 }}>
-      {/* Header */}
+    <>
+      <Box sx={{ maxWidth: '95%', width: '100%', mx: 'auto', py: 6, px: 4 }}>
+        {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography
           variant="h1"
@@ -339,7 +340,8 @@ function ManageGamesPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+      </Box>
+    </>
   );
 }
 
