@@ -132,7 +132,7 @@ export default function AuthCallback() {
     };
 
     handleUserRegistration();
-  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, navigate, error]);
+  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, registerPlayer, navigate, error]);
 
   return (
     <Box
