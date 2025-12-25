@@ -29,6 +29,7 @@ export function WinterModeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWinterMode() {
   const context = useContext(WinterModeContext);
   if (!context) {

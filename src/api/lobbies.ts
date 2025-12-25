@@ -95,7 +95,7 @@ export async function getMyLobby(): Promise<MyLobbyResponse | null> {
     };
 
     return frontendResponse;
-  } catch (error) {
+  } catch {
     // 204 No Content or error means no lobby
     return null;
   }
@@ -156,7 +156,7 @@ export async function getMyLobbyInvitations(): Promise<LobbyInvitation[]> {
     }
 
     return result;
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -180,7 +180,7 @@ export async function getAllPlayers(): Promise<Player[]> {
   try {
     const result = await apiGet<Player[]>(PLATFORM_ENDPOINTS.allPlayers);
     return result || [];
-  } catch (error) {
+  } catch {
     return [];
   }
 }

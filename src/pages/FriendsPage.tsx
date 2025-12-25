@@ -6,6 +6,7 @@ import { useFriends, useFriendRequests, useSendFriendRequest, useAcceptFriendReq
 import { SearchInput, Grid, EmptyState, PageContainer } from '../components/common'
 import { useAuth } from '../hooks/useAuth'
 import {useRegisterPlayer} from "../hooks/useRegisterPlayer.ts";
+import AddFriendSection from '../components/friends/AddFriendSection'
 
 function FriendsPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -117,129 +118,16 @@ function FriendsPage() {
         centered
       >
         {/* Add Friend Section */}
-        <div style={{
-          marginBottom: '3rem',
-          padding: '2rem',
-          background: 'var(--card-bg)',
-          border: '2px solid var(--card-border)',
-          borderRadius: '12px',
-          position: 'relative'
-        }}>
-          <h3 style={{
-            fontSize: '1.6rem',
-            fontWeight: 300,
-            marginBottom: '1.5rem',
-            color: 'var(--text-primary)'
-          }}>
-            Add Friend
-          </h3>
-          {sendRequestError && (
-            <div style={{
-              padding: '1rem 1.5rem',
-              marginBottom: '1.5rem',
-              background: 'rgba(220, 38, 38, 0.1)',
-              border: '2px solid rgba(220, 38, 38, 0.3)',
-              borderRadius: '8px',
-              color: '#dc2626',
-              fontSize: '1.2rem'
-            }}>
-              Error: {sendRequestError.apiMessage || sendRequestError.message}
-            </div>
-          )}
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              value={usernameSearch}
-              onChange={(e) => setUsernameSearch(e.target.value)}
-              placeholder="Search players by username..."
-              style={{
-                width: '100%',
-                padding: '1rem 1.5rem',
-                fontSize: '1.4rem',
-                background: 'var(--bg-secondary)',
-                border: '2px solid var(--card-border)',
-                borderRadius: '8px',
-                color: 'var(--text-primary)',
-                outline: 'none'
-              }}
-            />
-            {usernameSearch.length >= 2 && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                marginTop: '0.5rem',
-                background: 'var(--card-bg)',
-                border: '2px solid var(--card-border)',
-                borderRadius: '8px',
-                maxHeight: '300px',
-                overflowY: 'auto',
-                zIndex: 10
-              }}>
-                {searchingPlayers ? (
-                  <div style={{
-                    padding: '1.5rem',
-                    textAlign: 'center',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    Searching...
-                  </div>
-                ) : players.length > 0 ? (
-                  players.map((player) => (
-                    <div
-                      key={player.id}
-                      style={{
-                        padding: '1.5rem',
-                        borderBottom: '2px solid var(--card-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '1rem'
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '1.4rem',
-                          fontWeight: 300,
-                          color: 'var(--text-primary)',
-                          marginBottom: '0.5rem'
-                        }}>
-                          {player.username}
-                        </div>
-                        <div style={{
-                          fontSize: '1.1rem',
-                          color: 'var(--text-secondary)'
-                        }}>
-                          ID: {player.id}
-                        </div>
-                      </div>
-                      <Button
-                        variant="small"
-                        onClick={() => handleSendFriendRequest(player)}
-                        disabled={sendingRequest || sentRequests.has(player.id)}
-                      >
-                        {sentRequests.has(player.id)
-                          ? 'Request Sent ✓'
-                          : sendingRequest
-                          ? 'Sending...'
-                          : 'Add'}
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{
-                    padding: '1.5rem',
-                    textAlign: 'center',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    No players found
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        <AddFriendSection
+          usernameSearch={usernameSearch}
+          onUsernameSearchChange={setUsernameSearch}
+          players={players}
+          searchingPlayers={searchingPlayers}
+          sendingRequest={sendingRequest}
+          sendRequestError={sendRequestError}
+          sentRequests={sentRequests}
+          onSendFriendRequest={handleSendFriendRequest}
+        />
 
         {/* Friend Requests Section */}
         {friendRequests.length > 0 && (

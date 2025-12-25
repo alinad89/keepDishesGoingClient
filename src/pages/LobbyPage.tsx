@@ -74,16 +74,17 @@ function LobbyPage() {
     if (isAuthenticated && !playerRegistrationAttempted.current) {
       playerRegistrationAttempted.current = true;
       console.log('[LobbyPage] Attempting to register player...');
-      registerPlayerAsync()
-        .then(() => {
+
+      (async () => {
+        try {
+          await registerPlayerAsync();
           console.log('[LobbyPage] Player registered successfully');
           // Wait a bit for the event to be processed and projection to be created
           setTimeout(() => {
             console.log('[LobbyPage] Refetching lobby after player registration...');
             refetchLobby();
           }, 1000);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('[LobbyPage] Player registration error:', error);
           const apiError = error as ApiError;
           // Only show error if it's not a 409 (already registered)
@@ -92,10 +93,12 @@ function LobbyPage() {
           } else {
             console.log('[LobbyPage] Player already registered');
           }
-        });
+        }
+      })();
     }
   }, [isAuthenticated, registerPlayerAsync, refetchLobby]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!lobby) {
       setSessionLink(null);
@@ -104,21 +107,17 @@ function LobbyPage() {
       return;
     }
 
-    setSessionLink(lobby.gameSessionLink || null);
-  }, [lobby?.lobbyId]);
-
-  useEffect(() => {
-    if (lobby?.gameSessionLink) {
+    if (lobby.gameSessionLink) {
       setSessionLink(lobby.gameSessionLink);
     }
-  }, [lobby?.gameSessionLink]);
+  }, [lobby]);
 
   // Show modal when user first joins a lobby as non-owner
   useEffect(() => {
-    if (lobby && !lobby.isOwner && lobby.status === 'WAITING') {
+    if (lobby && !lobby.isOwner && lobby.status === 'WAITING' && !showJoinedLobbyModal) {
       setShowJoinedLobbyModal(true);
     }
-  }, [lobby?.lobbyId]); // Only runs when lobbyId changes (user joins a lobby)
+  }, [lobby, showJoinedLobbyModal]);
 
   // Show modal when game starts for non-owners
   useEffect(() => {
@@ -132,13 +131,14 @@ function LobbyPage() {
     }
 
     previousLobbyStatusRef.current = lobby.status;
-  }, [lobby?.status, lobby?.isOwner]);
+  }, [lobby]);
 
   useEffect(() => {
-    if (lobby && !lobby.isOwner && (externalSession || sessionLink)) {
+    if (lobby && !lobby.isOwner && (externalSession || sessionLink) && !showGameStartedModal) {
       setShowGameStartedModal(true);
     }
-  }, [externalSession, lobby?.isOwner, lobby?.lobbyId, sessionLink]);
+  }, [lobby, externalSession, sessionLink, showGameStartedModal]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const { isConnected: sessionSocketConnected } = useGameSessionWebSocket({
     enabled: Boolean(lobby?.lobbyId),
@@ -270,11 +270,10 @@ function LobbyPage() {
     }
   };
 
-  const handleCopy = (text: string, field: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    });
+  const handleCopy = async (text: string, field: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   // Helper function to render mode dialog

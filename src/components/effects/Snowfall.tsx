@@ -30,6 +30,7 @@ export default function Snowfall() {
     const count = 60; // Number of snowflakes
     const flakes: SnowflakeProps[] = [];
 
+    /* eslint-disable react-hooks/purity */
     for (let i = 0; i < count; i++) {
       flakes.push({
         left: Math.random() * 100,
@@ -39,6 +40,7 @@ export default function Snowfall() {
         delay: Math.random() * 5, // 0-5 seconds
       });
     }
+    /* eslint-enable react-hooks/purity */
 
     return flakes;
   }, []);

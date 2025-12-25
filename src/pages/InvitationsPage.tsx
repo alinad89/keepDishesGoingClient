@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import { useMyLobbyInvitations, useAcceptLobbyInvitation } from '../hooks/useLobbies';
 import { useRegisterPlayer } from '../hooks/useRegisterPlayer';
 import { useAuth } from '../hooks/useAuth';
+import { ApiError } from '../api/config';
 
 function InvitationsPage() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ function InvitationsPage() {
         navigate('/lobby');
       }, 500); // Small delay to let cache invalidate
     } catch (error) {
-      const apiError = error as any;
+      const apiError = error as ApiError;
       const errorMessage = apiError?.apiMessage || 'Failed to accept invitation';
 
       if (errorMessage.includes('already accepted')) {
