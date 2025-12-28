@@ -9,6 +9,7 @@ import { useAddGameToLibrary } from '../hooks/useGameLibrary.ts'
 import { SearchInput, FilterBar, Grid, EmptyState, PageContainer } from '../components/common'
 import { GAME_TAGS } from "../schemas/game.schema.ts";
 import GameDetailsModal from '../components/game/GameDetailsModal'
+import RecommendedGames from '../components/recommendations/RecommendedGames'
 
 function GamesPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,6 +59,9 @@ function GamesPage() {
 
   return (
     <PageContainer>
+      {/* Recommended Games Section */}
+      <RecommendedGames onViewDetails={setSelectedGameId} />
+
       <Section
         title="Browse Games"
         subtitle="Discover amazing games and add your favourites"
