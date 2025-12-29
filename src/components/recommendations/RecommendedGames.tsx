@@ -6,7 +6,7 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import PaymentButton from '../ui/PaymentButton';
 import { useAddGameToLibrary } from '../../hooks/useGameLibrary';
-import { Grid, LoadingSpinner } from '../common';
+import { Grid } from '../common';
 
 interface RecommendedGamesProps {
   onViewDetails?: (gameId: string) => void;
