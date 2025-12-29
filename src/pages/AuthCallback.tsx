@@ -7,9 +7,6 @@ import { useRegisterAdministrator } from '../hooks/useAdministrators';
 import { isDeveloper, ROLES } from '../utils/keycloakRoles';
 import {useRegisterPlayer} from "../hooks/useRegisterPlayer.ts";
 
-// ========================================
-// Authentication Callback Page
-// ========================================
 
 /**
  * Callback page after Keycloak authentication
@@ -37,7 +34,7 @@ export default function AuthCallback() {
   // Use the hooks to register developer/admin in backend
   const { registerDeveloperAsync } = useRegisterDeveloper();
   const { registerAdministratorAsync } = useRegisterAdministrator();
-  const { registerPlayer } = useRegisterPlayer();
+  const { registerPlayerAsync } = useRegisterPlayer();
 
   useEffect(() => {
     console.log('[AuthCallback] State:', {
@@ -120,19 +117,28 @@ export default function AuthCallback() {
           navigate('/developer/dashboard');
         }
       } else {
+        // User is a player - register in backend and redirect to games
         if (!alreadySynced) {
-          sessionStorage.setItem(syncKey, 'true');
-          registerPlayer();
-          console.log('[AuthCallback] Player registered, redirecting to games...');
+          console.log('[AuthCallback] Registering player in backend...');
+          try {
+            const response = await registerPlayerAsync();
+            console.log('[AuthCallback] Player registered:', response);
+            sessionStorage.setItem(syncKey, 'true');
+            navigate('/games');
+          } catch (error) {
+            console.error('[AuthCallback] Failed to register player:', error);
+            // Still redirect to games, backend might already have the user
+            navigate('/games');
+          }
+        } else {
+          // Already synced, just redirect
+          navigate('/games');
         }
-        // User is a player - redirect to games page
-        console.log('[AuthCallback] Player login, redirecting to games...');
-        navigate('/games');
       }
     };
 
     handleUserRegistration();
-  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, registerPlayer, navigate, error]);
+  }, [initialized, keycloak.authenticated, keycloak, intendedRole, registerDeveloperAsync, registerAdministratorAsync, registerPlayerAsync, navigate, error]);
 
   return (
     <Box

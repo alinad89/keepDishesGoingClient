@@ -65,11 +65,12 @@ function GameTagsSelector<T extends FieldValues & { tags: string[] }>({ control,
                 key={tag}
                 control={
                   <Checkbox
-                    checked={field.value.includes(tag)}
+                    checked={((field.value as string[]) || []).includes(tag)}
                     onChange={(e) => {
+                      const currentValue = (field.value as string[]) || [];
                       const newValue = e.target.checked
-                        ? [...field.value, tag]
-                        : field.value.filter((tagValue: string) => tagValue !== tag);
+                        ? [...currentValue, tag]
+                        : currentValue.filter((tagValue: string) => tagValue !== tag);
                       field.onChange(newValue);
                     }}
                   />
