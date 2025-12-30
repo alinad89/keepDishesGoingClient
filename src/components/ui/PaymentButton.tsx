@@ -1,4 +1,5 @@
 import type {MouseEvent} from 'react'
+import toast from 'react-hot-toast'
 import type {ApiError} from '../../api/config.ts'
 import Button from './Button'
 import {usePaymentLink} from '../../hooks/usePayments.ts'
@@ -38,6 +39,9 @@ function PaymentButton({
       onError: (error) => {
         onPaymentError?.(error)
         console.error('Unable to generate payment link', error)
+        toast.error(
+          error?.apiMessage || 'Unable to generate payment link. Please try again later.'
+        )
       },
     })
   }

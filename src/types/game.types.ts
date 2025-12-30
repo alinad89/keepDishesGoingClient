@@ -18,20 +18,6 @@ export interface Game {
   status?: 'ONLINE' | 'OFFLINE' | 'READY_FOR_PUBLISHING' | 'REJECTED' | string;
 }
 
-export interface PlatformGame {
-  id: string;
-  name: string;
-  description: string;
-  thumbnailUrl: string;
-  coverImageUrl: string;
-  rules: string;
-  shortDescription: string;
-  tags: string[];
-  version: string;
-  priceAmount: number;
-  owned?: boolean;
-}
-
 // ========================================
 // Platform Game Types (for players)
 // ========================================
@@ -45,7 +31,7 @@ export interface PlatformGameAchievement {
 
 export interface PlatformGame {
   id: string;
-  key: string;
+  key?: string;
   name: string;
   description: string;
   thumbnailUrl: string;
@@ -54,7 +40,9 @@ export interface PlatformGame {
   shortDescription: string;
   tags: string[];
   version: string;
-  url: string;
+  url?: string;
+  priceAmount: number;
+  owned?: boolean;
 }
 
 export interface PlatformGameDetails extends PlatformGame {

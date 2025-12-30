@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Section from '../components/ui/Section'
@@ -10,6 +11,7 @@ import { SearchInput, FilterBar, Grid, EmptyState, PageContainer } from '../comp
 import { GAME_TAGS } from "../schemas/game.schema.ts";
 import GameDetailsModal from '../components/game/GameDetailsModal'
 import RecommendedGames from '../components/recommendations/RecommendedGames'
+import type { ApiError } from '../api/config'
 
 function GamesPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -18,6 +20,23 @@ function GamesPage() {
   const { game: selectedGame, loading: gameDetailsLoading } = usePlatformGame(selectedGameId)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const { addGame, isPending: addingToLibrary } = useAddGameToLibrary()
+
+  const handleAddGame = (gameId: string, gameName: string) => {
+    addGame(
+      { gameId },
+      {
+        onSuccess: () => {
+          toast.success(`${gameName} added to your library!`)
+        },
+        onError: (error) => {
+          const apiError = error as ApiError
+          toast.error(
+            apiError?.apiMessage || 'Failed to add game to library. Please try again.'
+          )
+        },
+      }
+    )
+  }
 
   const trimmedSearch = searchQuery.trim()
 
@@ -131,7 +150,7 @@ function GamesPage() {
                       <Button
                         variant="small"
                         disabled={addingToLibrary}
-                        onClick={() => addGame({ gameId: game.id })}
+                        onClick={() => handleAddGame(game.id, game.name)}
                       >
                         {addingToLibrary ? 'Adding...' : 'Aquire'}
                       </Button>
