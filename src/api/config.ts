@@ -48,7 +48,8 @@ export const PLATFORM_ENDPOINTS = {
   addGameToLibrary: '/game-libraries/me/games',
   addGameToFavourites: (gameId:string) =>`/game-libraries/me/games/${gameId}`,
   paymentLinkGeneration: (gameId: string) => `/games/${gameId}/purchase-session`,
-  gameSessionsMe: '/game-sessions/me',
+  gameSessionsMe: (gameId: string) => `/games/${gameId}/game-sessions/me`,
+  gameSessionDetail: (gameId: string, sessionId: string) => `/games/${gameId}/game-sessions/${sessionId}`,
 } as const;
 
 export const SOCIAL_ENDPOINTS = {

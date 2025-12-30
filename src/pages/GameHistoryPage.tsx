@@ -12,7 +12,9 @@ import {
   InfoBox,
 } from '../components/common';
 import { useGameSessions } from '../hooks/useGameSessions';
-import type { GameSessionSummary } from '../types/game-session.types';
+import GameSessionDetailModal from '../components/game/GameSessionDetailModal';
+import { fetchGameSessionDetail } from '../api/gameSessions';
+import type { GameSessionSummary, GameSessionDetail } from '../types/game-session.types';
 
 type ResultFilter = 'all' | 'win' | 'lose' | 'draw';
 
@@ -33,6 +35,9 @@ const normalizeResult = (result?: string) => result?.toLowerCase?.() || '';
 function GameHistoryPage() {
   const { keycloak, initialized } = useKeycloak();
   const [filter, setFilter] = useState<ResultFilter>('all');
+  const [selectedSession, setSelectedSession] = useState<GameSessionDetail | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const {
     gameSessions,
@@ -49,6 +54,31 @@ function GameHistoryPage() {
     return gameSessions.filter((session) => normalizeResult(session.result) === filter);
   }, [filter, gameSessions]);
 
+  const handleSessionClick = async (session: GameSessionSummary) => {
+    if (!session.id || !session.gameId) {
+      console.error('Session is missing id or gameId');
+      return;
+    }
+
+    setModalOpen(true);
+    setLoadingDetail(true);
+
+    try {
+      const detail = await fetchGameSessionDetail(session.gameId, session.id);
+      setSelectedSession(detail);
+    } catch (err) {
+      console.error('Failed to fetch session details:', err);
+      setSelectedSession(null);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedSession(null);
+  };
+
   const renderSessionCard = (session: GameSessionSummary, index: number) => {
     const normalizedResult = normalizeResult(session.result);
     const resultLabel = resultLabelMap[normalizedResult] || session.result;
@@ -57,6 +87,7 @@ function GameHistoryPage() {
     return (
       <Box
         key={`${session.date}-${index}`}
+        onClick={() => handleSessionClick(session)}
         sx={{
           position: 'relative',
           display: 'flex',
@@ -68,6 +99,13 @@ function GameHistoryPage() {
           background: 'linear-gradient(145deg, rgba(15,23,42,0.95), rgba(30,41,59,0.92))',
           border: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 20px 45px rgba(0,0,0,0.6)',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 24px 50px rgba(0,0,0,0.7)',
+            border: '1px solid rgba(255,255,255,0.15)',
+          },
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -205,6 +243,13 @@ function GameHistoryPage() {
           </Grid>
         )}
       </Section>
+
+      <GameSessionDetailModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        session={selectedSession}
+        loading={loadingDetail}
+      />
     </PageContainer>
   );
 }
