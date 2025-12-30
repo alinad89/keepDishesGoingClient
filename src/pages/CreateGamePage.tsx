@@ -1,4 +1,4 @@
-import { CreateGameForm } from '../components/CreateGameForm';
+import { CreateGameForm } from '../components/game/CreateGameForm';
 
 export function CreateGamePage() {
   return (

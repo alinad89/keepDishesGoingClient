@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useKeycloak } from '@react-keycloak/web';
 import {
   fetchGames,
   fetchGameById,
@@ -6,13 +7,16 @@ import {
   updateGame,
   changeGameStatus,
   deleteGame,
+  triggerSelfPlay,
   type Game,
   type CreateGameRequest,
   type CreateGameResponse,
   type UpdateGameRequest,
   type ChangeGameStatusRequest,
+  type TriggerSelfPlayRequest,
+  fetchPublishedGames,
 } from '../api/games';
-import type { GameStatusAction } from '../types/api';
+import type {GameStatusAction, PlatformGame} from '../types/game.types';
 import { ApiError } from '../api/config';
 
 // Re-export types for convenience
@@ -23,7 +27,13 @@ export type {
   UpdateGameRequest,
   ChangeGameStatusRequest,
   GameStatusAction,
+  TriggerSelfPlayRequest,
 };
+
+export interface PlatformGamesFilters {
+  searchQuery?: string;
+  filterBy?: string[];
+}
 
 /**
  * Hook to fetch all games
@@ -39,6 +49,39 @@ export function useGames() {
   } = useQuery<Game[], Error>({
     queryKey: ['games'],
     queryFn: fetchGames,
+  });
+
+  return {
+    games,
+    loading: isLoading,
+    error: error instanceof ApiError ? error : null,
+    isError,
+    refetch,
+  };
+}
+
+/**
+ * Hook to fetch platform available games
+ * /api/platform/games
+ */
+export function usePlatformGames(filters: PlatformGamesFilters = {}) {
+  const { keycloak, initialized } = useKeycloak();
+
+  const {
+    data: games = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<PlatformGame[], Error>({
+    queryKey: [
+      'platformGames',
+      filters.searchQuery || '',
+      (filters.filterBy || []).join(','),
+      keycloak.authenticated ? 'auth' : 'anon',
+    ],
+    queryFn: () => fetchPublishedGames(filters),
+    enabled: initialized,
   });
 
   return {
@@ -200,6 +243,32 @@ export function useDeleteGame() {
   return {
     deleteGame: mutate,
     deleteGameAsync: mutateAsync,
+    loading: isPending,
+    error: error instanceof ApiError ? error : null,
+    isError,
+  };
+}
+
+/**
+ * Hook to trigger self-play for a game
+ * POST /api/games/{id}/selfplay
+ */
+export function useTriggerSelfPlay() {
+  const {
+    mutate,
+    mutateAsync,
+    isPending,
+    isError,
+    error,
+  } = useMutation<void, Error, { gameId: string; request: TriggerSelfPlayRequest }>({
+    mutationFn: ({ gameId, request }) => triggerSelfPlay(gameId, request),
+  });
+
+  return {
+    triggerSelfPlay: (gameId: string, request: TriggerSelfPlayRequest) =>
+      mutate({ gameId, request }),
+    triggerSelfPlayAsync: (gameId: string, request: TriggerSelfPlayRequest) =>
+      mutateAsync({ gameId, request }),
     loading: isPending,
     error: error instanceof ApiError ? error : null,
     isError,

@@ -23,6 +23,23 @@ export interface RegisterDeveloperResponse {
   id: string;
 }
 
+// Administrator
+export interface Administrator {
+  id: string;
+}
+
+export interface RegisterAdministratorResponse {
+  id: string;
+}
+
+// Game status enum
+export type GameStatus =
+  | 'IN_DEVELOPMENT'
+  | 'READY_FOR_PUBLISHING'
+  | 'ONLINE'
+  | 'REJECTED'
+  | 'OFFLINE';
+
 // Game
 export interface Game {
   id: string;
@@ -36,6 +53,8 @@ export interface Game {
   tags: string[];
   version: string;
   url: string;
+  priceAmount: number;
+  status?: GameStatus; // Optional for backward compatibility
 }
 
 export type DeploymentMode = 'url' | 'backend-zip';
@@ -48,6 +67,7 @@ export interface GameMetadata {
   tags: string[];
   version: string;
   url: string;
+  priceUnits: number;
 }
 
 export interface CreateGameRequest {
@@ -76,9 +96,9 @@ export interface UpdateGameRequest {
 }
 
 export type GameStatusAction =
-  | 'MARK-READY-FOR-PUBLISHING'
-  | 'MARK-ONLINE'
-  | 'MARK-REJECTED';
+  | 'MARK_READY_FOR_PUBLISHING'
+  | 'MARK_ONLINE'
+  | 'MARK_REJECTED';
 
 export interface ChangeGameStatusRequest {
   id: string;
@@ -140,5 +160,120 @@ export interface CreateMessageRequest {
 }
 
 export interface CreateMessageResponse {
+  id?: string; // Deprecated: some endpoints might use this
+  chatId: string; // The actual field the backend returns
+  message?: ChatMessage; // Optional: Backend might include AI response here
+}
+
+// ========================================
+// Platform BC Types - Lobby
+// ========================================
+
+export interface Lobby {
   id: string;
+  key: string;
+  gameId: string;
+  status: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  withAi: boolean;
+}
+
+export interface CreateLobbyRequest {
+  gameId: string;
+}
+
+export interface CreateLobbyResponse {
+  lobbyId: string;
+}
+
+export type LobbyStatusAction = 'START_GAME';
+
+export interface ChangeLobbyStatusRequest {
+  action: LobbyStatusAction;
+}
+
+export type LobbyMode = 'PVE_WITH_ML' | 'PVE_WITH_MCTS' | 'PVP';
+
+export interface ChangeLobbyModeRequest {
+  desiredMode: LobbyMode;
+}
+
+export interface PlayerResponse {
+  id: string;
+}
+
+// ========================================
+// Social BC Types - Lobby Invitations
+// ========================================
+
+export interface LobbyInvitation {
+  id: string;
+  sender: PlayerInfo;
+  receiver: PlayerInfo;
+  lobbyId: string;
+  issuedAt: string;
+}
+
+export interface PlayerInfo {
+  id: string;
+  username: string;
+  email: string;
+}
+
+export interface CreateLobbyInvitationRequest {
+  receiver: string; // Player ID
+  lobby: string; // Lobby ID
+}
+
+export interface CreateLobbyInvitationResponse {
+  id: string;
+}
+
+// Backend AiType enum (from Java backend)
+export type BackendAiType = 'NONE' | 'MCTS' | 'ML';
+
+// Backend response from GET /api/lobbies/me
+export interface MyLobbyBackendResponse {
+  lobbyId: string;
+  lobbyKey: string;
+  status: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  aiType?: BackendAiType;
+  game: {
+    id: string;
+    name: string;
+    thumbnailUrl?: string;
+  };
+  otherParticipants: PlayerInfo[];
+  isOwner: boolean;
+  gameSessionLink?: string;
+  playerIds?: string[];
+}
+
+// Frontend lobby response (for UI)
+export interface MyLobbyResponse {
+  lobbyId: string;
+  status: 'WAITING' | 'IN_GAME' | 'FINISHED';
+  mode?: LobbyMode;
+  game: {
+    id: string;
+    name: string;
+    thumbnailUrl?: string;
+  };
+  otherParticipants?: PlayerInfo[];
+  // Only present when status is IN_GAME and user is owner
+  gameSessionLink?: string;
+  playerIds?: string[];
+  isOwner?: boolean;
+}
+
+// Friend list types
+export interface Friend {
+  id: string;
+  username: string;
+}
+
+// All players list (for invitations)
+export interface Player {
+  id: string;
+  username: string;
+  email?: string;
 }

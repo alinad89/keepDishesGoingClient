@@ -224,7 +224,6 @@
   position: relative;
   overflow: hidden;
   text-align: center;
-  clip-path: var(--clip-shape-card);
 }
 
 .dashboard-main-card::before {
@@ -300,7 +299,7 @@
   background: var(--bg-color);
   transition: all 0.3s ease;
   font-weight: 100;
-  clip-path: var(--clip-shape-cta);
+  border-radius: 4px;
 }
 
 .feature-item:hover {
@@ -324,7 +323,6 @@
   background: linear-gradient(135deg, var(--card-bg), var(--bg-color));
   padding: 2rem;
   box-shadow: 0 6px 20px var(--shadow-color);
-  clip-path: var(--clip-shape-card);
 }
 
 .info-box h3 {

@@ -1,49 +1,192 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import LandingPage from './pages/LandingPage'
-import GamesPage from './pages/GamesPage'
-import LobbyPage from './pages/LobbyPage'
-import FriendsPage from './pages/FriendsPage'
-import AchievementsPage from './pages/AchievementsPage'
-import DeveloperPage from './pages/DeveloperPage'
-import DeveloperDashboardPage from './pages/DeveloperDashboardPage'
-import { CreateGamePage } from './pages/CreateGamePage'
-import ManageGamesPage from './pages/ManageGamesPage'
-import GameDetailsPage from './pages/GameDetailsPage'
-import EditGamePage from './pages/EditGamePage'
-import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
+import { Toaster } from 'react-hot-toast'
+import Snowfall from 'react-snowfall'
+import Navbar from './components/navigation/Navbar'
+import { ChatBox } from './components/ChatBox'
+import { authRoutes, developerRoutes, publicRoutes } from './routes/routeConfig'
+import { renderAuthRoutes, renderDeveloperRoutes, renderPublicRoutes } from './routes/routeUtils'
 import './App.css'
+import DeveloperDashboardLayout from './layouts/DeveloperDashboardLayout'
+import { Protected } from './routes/Protected'
+import InvitationsPage from "./pages/InvitationsPage.tsx";
+import DeveloperDashboardPage from "./pages/DeveloperDashboardPage.tsx";
+import ManageGamesPage from "./pages/ManageGamesPage.tsx";
+import {CreateGamePage} from "./pages/CreateGamePage.tsx";
+import GameDetailsPage from "./pages/GameDetailsPage.tsx";
+import EditGamePage from './pages/EditGamePage.tsx'
+import RagManagementPage from './pages/RagManagementPage'
+import DeveloperDocsPage from './pages/DeveloperDocsPage.tsx'
+import AIIntegrationPage from './pages/AIIntegrationPage.tsx'
+import AchievementIntegrationPage from './pages/AchievementIntegrationPage.tsx'
+import { WinterModeProvider, useWinterMode } from './contexts/WinterModeContext'
 
-function App() {
+function AppContent() {
+  const { isWinterMode } = useWinterMode();
+
+  console.log('[App] Winter mode:', isWinterMode);
+
   return (
     <BrowserRouter>
+      {isWinterMode && (
+        <>
+          {console.log('[App] Rendering Snowfall')}
+          <Snowfall
+            snowflakeCount={200}
+            style={{
+              position: 'fixed',
+              width: '100vw',
+              height: '100vh',
+              zIndex: 9999,
+              pointerEvents: 'none'
+            }}
+          />
+        </>
+      )}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'var(--card-bg)',
+            color: 'var(--text)',
+            border: '2px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '16px',
+            fontSize: '14px',
+          },
+          success: {
+            iconTheme: {
+              primary: 'var(--accent)',
+              secondary: 'var(--card-bg)',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ff6b6b',
+              secondary: 'var(--card-bg)',
+            },
+          },
+        }}
+      />
       <div className="app">
         <Routes>
-          {/* Developer Dashboard Routes - With developer navbar */}
+          {/* Authentication Routes */}
+          {renderAuthRoutes(authRoutes)}
+
+          {/* Developer Dashboard Routes - Protected with authentication */}
+          {renderDeveloperRoutes(developerRoutes)}
           <Route path="/developer/dashboard" element={
-            <DeveloperDashboardLayout>
-              <DeveloperDashboardPage />
-            </DeveloperDashboardLayout>
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <DeveloperDashboardPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games" element={
-            <DeveloperDashboardLayout>
-              <ManageGamesPage />
-            </DeveloperDashboardLayout>
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <ManageGamesPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
+
+          {/* Admin routes - using main navbar instead of developer layout */}
+          <Route path="/admin/games" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <ManageGamesPage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/new" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <CreateGamePage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/:id" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <GameDetailsPage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/:id/edit" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <EditGamePage />
+                </main>
+              </>
+            </Protected>
+          } />
+
           <Route path="/developer/games/new" element={
-            <DeveloperDashboardLayout>
-              <CreateGamePage />
-            </DeveloperDashboardLayout>
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <CreateGamePage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games/:id" element={
-            <DeveloperDashboardLayout>
-              <GameDetailsPage />
-            </DeveloperDashboardLayout>
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <GameDetailsPage />
+              </DeveloperDashboardLayout>
+            </Protected>
           } />
           <Route path="/developer/games/:id/edit" element={
-            <DeveloperDashboardLayout>
-              <EditGamePage />
-            </DeveloperDashboardLayout>
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <EditGamePage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+
+          {/* Developer Documentation Routes */}
+          <Route path="/developer/docs" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <DeveloperDocsPage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+          <Route path="/developer/docs/ai-integration" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <AIIntegrationPage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+          <Route path="/developer/docs/achievements" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <AchievementIntegrationPage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+
+          {/* Admin RAG Management Route - Admin only with main navbar */}
+          <Route path="/admin/rag" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <RagManagementPage />
+                </main>
+              </>
+            </Protected>
           } />
 
           {/* Main App Routes - With main navbar */}
@@ -52,19 +195,26 @@ function App() {
               <Navbar />
               <main className="main-container">
                 <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/games" element={<GamesPage />} />
-                  <Route path="/lobby" element={<LobbyPage />} />
-                  <Route path="/friends" element={<FriendsPage />} />
-                  <Route path="/achievements" element={<AchievementsPage />} />
-                  <Route path="/developer" element={<DeveloperPage />} />
+                  {renderPublicRoutes(publicRoutes)}
+                  <Route path="/invitations" element={<InvitationsPage />} />
                 </Routes>
               </main>
             </>
           } />
         </Routes>
+
+        {/* Global Chat Widget */}
+        <ChatBox />
       </div>
     </BrowserRouter>
+  )
+}
+
+function App() {
+  return (
+    <WinterModeProvider>
+      <AppContent />
+    </WinterModeProvider>
   )
 }
 

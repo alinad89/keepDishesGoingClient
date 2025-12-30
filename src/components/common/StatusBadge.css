@@ -6,7 +6,6 @@
   letter-spacing: 1px;
   border-radius: 4px;
   display: inline-block;
-  clip-path: var(--clip-shape-badge);
 }
 
 .status-badge-ready,

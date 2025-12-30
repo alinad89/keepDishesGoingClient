@@ -1,0 +1,239 @@
+stages:
+  - build
+  - test
+  - package
+
+variables:
+  NODE_VERSION: "22-alpine"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_DRIVER: overlay2
+
+  DIST_DIR: "dist"
+  REPORTS_DIR: "reports"
+  COVERAGE_DIR: "coverage"
+
+# ========================================
+# Cache Config
+# ========================================
+
+.node_cache: &node_cache
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+  policy: pull
+
+.node_cache_push: &node_cache_push
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+  policy: pull-push
+
+# ========================================
+# Rules Config
+# ========================================
+
+# rules for jobs that run on both MRs and default branch
+.rules_build_test: &rules_build_test
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+
+# rules for jobs that run ONLY on default branch
+.rules_package: &rules_package
+  - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+
+# ========================================
+# BUILD STAGE
+# ========================================
+
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  before_script:
+    - echo "Building frontend microservice..."
+    - echo "Node version:" && node --version
+    - echo "NPM version:" && npm --version
+  script:
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
+    - |
+      if grep -q '"typecheck"' package.json; then
+        echo "Running TypeScript type checking..."
+        npm run typecheck
+      else
+        echo "No typecheck script found, skipping type check"
+      fi
+    - echo "Building React application..."
+    - npm run build
+    - 'ls -la ${DIST_DIR}/ || echo "Warning: ${DIST_DIR} directory not found"'
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - ${DIST_DIR}/
+      - node_modules/
+  rules: *rules_build_test
+
+# ========================================
+# TEST STAGE
+# ========================================
+
+test:
+  stage: test
+  image: node:${NODE_VERSION}
+  needs:
+    - build
+  before_script:
+    - echo "Running unit tests..."
+    - mkdir -p ${REPORTS_DIR}
+  script:
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
+    - |
+      if grep -q '"test:ci"' package.json; then
+        echo "Running npm run test:ci"
+        npm run test:ci
+      elif grep -q 'jest' package.json; then
+        echo "Running Jest tests with CI reporters..."
+        npm test -- --ci --coverage --reporters=default --reporters=jest-junit
+      elif grep -q 'vitest' package.json; then
+        echo "Running Vitest tests..."
+        npm test -- --reporter=junit --reporter=default --coverage.enabled=true --coverage.reporter=text --coverage.reporter=lcov
+      elif node -e "import pkg from './package.json' assert { type: 'json' }; process.exit(pkg.scripts?.test ? 0 : 1);" ; then
+        echo "Running npm test"
+        npm test
+      else
+        echo "No test script found; skipping tests"
+      fi
+  artifacts:
+    when: always
+    expire_in: 30 days
+    reports:
+      junit:
+        - ${REPORTS_DIR}/junit.xml
+        - ${REPORTS_DIR}/junit*.xml
+    paths:
+      - ${REPORTS_DIR}/
+      - ${COVERAGE_DIR}/
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  rules: *rules_build_test
+
+code_quality:
+  stage: test
+  image: node:${NODE_VERSION}
+  needs:
+    - build
+  before_script:
+    - echo "Running code quality (lint) checks..."
+  script:
+    - |
+      if [ -f package-lock.json ]; then
+        echo "Installing dependencies with npm ci"
+        npm ci --prefer-offline --no-audit
+      else
+        echo "package-lock.json missing; running npm install"
+        npm install --prefer-offline --no-audit
+      fi
+    - |
+      if grep -q '"lint:ci"' package.json; then
+        echo "Running npm run lint:ci"
+        npm run lint:ci
+      elif grep -q '"lint"' package.json; then
+        if [ -f eslint.config.js ] || [ -f .eslintrc ] || [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc.cjs ]; then
+          echo "Running npm run lint"
+          npm run lint
+        else
+          echo "Lint script found but no ESLint config; skipping linting"
+        fi
+      else
+        echo "No lint script found, skipping linting"
+      fi
+    - echo "[]" > gl-code-quality-report.json
+  artifacts:
+    when: always
+    expire_in: 30 days
+    reports:
+      codequality: gl-code-quality-report.json
+    paths:
+      - gl-code-quality-report.json
+  allow_failure: true
+  rules: *rules_build_test
+
+# ===============
+# PACKAGE STAGE
+# ===============
+
+package:
+  stage: package
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - echo "Packaging frontend microservice as Docker image..."
+    - docker info
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - echo "Building Docker image for $CI_REGISTRY_IMAGE..."
+    - docker build --pull --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" --tag "$CI_REGISTRY_IMAGE:latest" --file Dockerfile .
+    - 'echo "Pushing Docker image with tags: $CI_COMMIT_SHA and latest"'
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+    - echo "Successfully pushed images:"
+    - echo "  - $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - echo "  - $CI_REGISTRY_IMAGE:latest"
+  rules: *rules_package
+
+
+trigger_integration:
+  stage: package
+  image: curlimages/curl:latest
+  needs:
+    - package
+  before_script:
+    - echo "Triggering integration tests in master repository..."
+  script:
+    - |
+      echo "Sending trigger request to master repository..."
+      HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" \
+        -X POST \
+        -F token="$MASTER_TRIGGER_TOKEN" \
+        -F ref=main \
+        -F "variables[TRIGGERED_BY]=$CI_PROJECT_NAME" \
+        -F "variables[MICROSERVICE_NAME]=$CI_PROJECT_NAME" \
+        -F "variables[IMAGE_TAG]=$CI_COMMIT_SHA" \
+        "$CI_API_V4_URL/projects/$MASTER_PROJECT_ID/trigger/pipeline")
+
+      HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n1)
+      HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+
+      echo "Response status: $HTTP_CODE"
+      echo "Response body: $HTTP_BODY"
+
+      # Check if request was successful (2xx status codes)
+      if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+        echo "✓ Successfully triggered integration tests in master repository"
+        exit 0
+      else
+        echo "✗ Failed to trigger integration tests. HTTP status: $HTTP_CODE"
+        exit 1
+      fi
+  allow_failure: true
+  rules: *rules_package

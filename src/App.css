@@ -1,47 +1,30 @@
-/* ----- LIGHT THEME (default) ----- */
+/* ----- DARK THEME (only theme) ----- */
 :root {
-    --bg-color: #C1D4FF;        /* darker light blue background */
-    --card-bg: #D6E3FF;         /* slightly lighter than bg, still blue */
-    --card-border: #96B0F0;     /* mid-blue border for separation */
+    /* Neutral gray base – more contrast between bg and card */
+    --bg-color: #111318;        /* deeper charcoal */
+    --card-bg: #343A43;         /* lighter gray card background */
+    --card-border: #4C5A86;     /* brighter blue-gray border */
 
-    --text-color: #05132E;      /* very dark navy-blue for max contrast */
-    --muted-text: #304067;      /* softer blue-gray for secondary text */
+    /* Text */
+    --text-color: #FFF6EF;      /* warm almost-white */
+    --muted-text: #B8C0DD;      /* cool muted blue-gray for secondary text */
 
-    --accent: #194FCC;          /* deeper blue accent for buttons/links */
-    --hover-accent: #123A96;    /* darker hover for clear feedback */
+    /* Purple accents */
+    --accent: #A855FF;          /* primary purple accent */
+    --hover-accent: #7C3AED;    /* deeper purple on hover */
 
     /* Gaming enhancements - gradients and glows */
-    --accent-glow: rgba(25, 79, 204, 0.4);
-    --accent-gradient-start: #194FCC;
-    --accent-gradient-end: #2E5FDD;
-    --card-glow: rgba(150, 176, 240, 0.2);
-    --shadow-color: rgba(5, 19, 46, 0.15);
-}
+    --accent-gradient-start: #A855FF;          /* purple start */
+    --accent-gradient-end: #E879F9;            /* pinkish purple end */
+    --accent-glow: rgba(168, 85, 255, 0.45);   /* soft purple glow */
 
-/* ----- DARK THEME ----- */
-:root[data-theme='dark'] {
-    --bg-color: #3C0729;        /* a bit deeper, more burgundy */
-    --card-bg: #7C0F33;         /* darker card background */
-    --card-border: #9E1A43;     /* slightly deeper border */
+    /* Card glow: soft purple */
+    --card-glow: rgba(168, 85, 255, 0.18);
+    --shadow-color: rgba(0, 0, 0, 0.7);
 
-    /* brighter, more readable text */
-    --text-color: #FFF6EF;      /* warm almost-white */
-    --muted-text: #F9B893;      /* soft peach for secondary text */
-
-    /* warm orange accents, slightly darker */
-    --accent: #E05C1A;          /* darker primary orange accent */
-    --hover-accent: #B64811;    /* deeper orange on hover */
-
-    /* Gaming enhancements - gradients and glows (warm, darker) */
-    --accent-gradient-start: #E05C1A;   /* darker start */
-    --accent-gradient-end: #F39A2D;     /* deeper gold */
-    --accent-glow: rgba(176, 72, 17, 0.45); /* darker + a bit softer */
-    --card-glow: rgba(215, 132, 90, 0.16);
-    --shadow-color: rgba(0, 0, 0, 0.6);
-
-    /* Text glow, slightly toned down */
-    --text-glow-soft: 0 0 6px rgba(255, 210, 180, 0.16);
-    --text-glow-strong: 0 0 10px rgba(255, 210, 180, 0.3);
+    /* Text glow: purple-tinted */
+    --text-glow-soft: 0 0 6px rgba(200, 180, 255, 0.16);
+    --text-glow-strong: 0 0 10px rgba(220, 190, 255, 0.3);
 }
 :root {
     /* Clip-path shape variables */
@@ -69,7 +52,7 @@
 body {
     margin: 0;
     display: block;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Gertika', sans-serif;
     font-weight: 100;
     background-color: var(--bg-color);
     color: var(--text-color);
