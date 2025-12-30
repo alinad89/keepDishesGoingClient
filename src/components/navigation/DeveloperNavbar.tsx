@@ -27,6 +27,11 @@ function DeveloperNavbar() {
                 Add New Game
               </Link>
             </li>
+            <li>
+              <Link to="/developer/docs">
+                Documentation
+              </Link>
+            </li>
           </ul>
 
           {/* Winter Mode Toggle */}

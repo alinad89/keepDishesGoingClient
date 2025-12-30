@@ -5,6 +5,7 @@ import type {
   UpdateGameRequest,
   ChangeGameStatusRequest,
   PlatformGame,
+  TriggerSelfPlayRequest,
 } from '../types/game.types';
 import {
   DEVELOPER_ENDPOINTS,
@@ -26,6 +27,7 @@ export type {
   CreateGameResponse,
   UpdateGameRequest,
   ChangeGameStatusRequest,
+  TriggerSelfPlayRequest,
 };
 
 /**
@@ -203,4 +205,15 @@ export async function changeGameStatus(
  */
 export async function deleteGame(gameId: string): Promise<void> {
   await apiDelete<void>(DEVELOPER_ENDPOINTS.gameById(gameId));
+}
+
+/**
+ * Trigger self-play for a game
+ * POST /api/games/{id}/selfplay
+ */
+export async function triggerSelfPlay(
+  gameId: string,
+  request: TriggerSelfPlayRequest
+): Promise<void> {
+  await apiPost<void>(DEVELOPER_ENDPOINTS.gameSelfPlay(gameId), request);
 }

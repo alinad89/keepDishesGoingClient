@@ -14,6 +14,7 @@ export const DEVELOPER_ENDPOINTS = {
   games: '/games',
   gameById: (id: string) => `/games/${id}`,
   gameStatus: (id: string) => `/games/${id}/status`,
+  gameSelfPlay: (id: string) => `/games/${id}/selfplay`,
   // For JSON Server mock: use query params instead of nested routes
   gameAchievements: (gameId: string) =>
     USE_MOCK_API ? `/achievements?gameId=${gameId}` : `/games/${gameId}/achievements`,
@@ -65,9 +66,11 @@ export const SOCIAL_ENDPOINTS = {
 
 //Get JWT token from Keycloak
 export function getAuthToken(): string | null {
+  console.log('[getAuthToken] Authenticated:', keycloak.authenticated, 'Has token:', !!keycloak.token);
   if (keycloak.authenticated && keycloak.token) {
     return keycloak.token;
   }
+  console.warn('[getAuthToken] No token available - user may not be authenticated');
   return null;
 }
 
@@ -141,6 +144,9 @@ function getHeaders(includeContentType: boolean = true): HeadersInit {
   const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log('[getHeaders] Authorization header added with token (length:', token.length, ')');
+  } else {
+    console.warn('[getHeaders] No authorization token - request will be sent without auth');
   }
 
   // Add content type for JSON requests

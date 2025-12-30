@@ -1,9 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Box, Alert } from '@mui/material';
+import {
+  Box,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography
+} from '@mui/material';
 import type { CreateGameRequest } from '../../types/game.types';
 import { useCreateGame } from '../../hooks/useGames';
 import { GAME_TAGS } from '../../schemas/game.schema';
@@ -116,6 +124,7 @@ type CreateGameFormContext = { source: 'create-game-form' };
 export function CreateGameForm() {
   const navigate = useNavigate();
   const { createGameAsync, loading, error } = useCreateGame();
+  const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
 
   const {
     register,
@@ -145,6 +154,14 @@ export function CreateGameForm() {
   const selectedTags = watch('tags', emptyTags);
   const deploymentMode = watch('deploymentMode');
   const isFree = watch('isFree');
+
+  // Show API key dialog when backend-zip is selected
+  useEffect(() => {
+    if (deploymentMode === 'backend-zip' && !apiKeyDialogOpen) {
+      setApiKeyDialogOpen(true);
+    }
+  }, [deploymentMode]);
+
 
   useEffect(() => {
     if (isFree) {
@@ -257,6 +274,48 @@ export function CreateGameForm() {
           {loading ? 'Creating Game...' : 'Create Game'}
         </Button>
       </Box>
+
+      {/* API Key Reminder Dialog */}
+      <Dialog
+        open={apiKeyDialogOpen}
+        onClose={() => setApiKeyDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Important: Backend Deployment Configuration</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Since you're deploying your game with a backend ZIP file, don't forget to include your
+            API key in your game's <code>.env</code> file.
+          </Typography>
+
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Your API key is required for your game backend to communicate with the Hexagon platform.
+            You can find your API key in your developer dashboard.
+          </Typography>
+
+          <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic', color: 'text.secondary' }}>
+            Add this to your game's <code>.env</code> file:
+          </Typography>
+          <Box
+            sx={{
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              p: 1.5,
+              borderRadius: 1,
+              mt: 1,
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+            }}
+          >
+            HEXAGON_API_KEY='your-api-key-here'
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setApiKeyDialogOpen(false)} variant="primary">
+            Got it!
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

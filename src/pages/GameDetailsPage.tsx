@@ -15,8 +15,13 @@ import {
     DialogContent,
     DialogActions,
     TextField,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Grid,
 } from '@mui/material';
-import { useGame } from '../hooks/useGames';
+import { useGame, useTriggerSelfPlay } from '../hooks/useGames';
 import {
     useCreateAchievement,
     useDeleteAchievement,
@@ -25,6 +30,7 @@ import {
 } from '../hooks/useAchievements';
 import type { Achievement } from '../types/achievement.types';
 import { AchievementsSection } from './components/AchievementsSection';
+import { Difficulty } from '../types/game.types';
 
 function GameDetailsPage() {
     const { id } = useParams<{ id: string }>();
@@ -70,6 +76,20 @@ function GameDetailsPage() {
         instructions: '',
         icon: null as File | null,
     });
+
+    // Self-play state
+    const { triggerSelfPlayAsync, loading: triggeringSelfPlay, error: selfPlayError } = useTriggerSelfPlay();
+    const [selfPlayForm, setSelfPlayForm] = useState({
+        episodes: 100,
+        playerOneDifficulty: Difficulty.MEDIUM,
+        playerTwoDifficulty: Difficulty.MEDIUM,
+        mctsConfig: {
+            iterationsPerMove: 1000,
+            explorationConstant: 1.41,
+            timeoutMillis: 5000,
+        },
+    });
+    const [selfPlaySuccess, setSelfPlaySuccess] = useState(false);
 
     const handleOpenCreate = () => {
         setCreateForm({ name: '', instructions: '', icon: null });
@@ -141,6 +161,18 @@ function GameDetailsPage() {
             setDeleteDialogOpen(false);
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Failed to delete achievement');
+        }
+    };
+
+    const handleTriggerSelfPlay = async () => {
+        if (!id) return;
+
+        try {
+            setSelfPlaySuccess(false);
+            await triggerSelfPlayAsync(id, selfPlayForm);
+            setSelfPlaySuccess(true);
+        } catch (err) {
+            console.error('Failed to trigger self-play:', err);
         }
     };
 
@@ -381,6 +413,130 @@ function GameDetailsPage() {
                 onEdit={handleOpenEdit}
                 onDelete={handleOpenDelete}
             />
+
+            {/* Self-Play */}
+            <Card sx={{ mb: 3 }}>
+                <CardContent sx={{ p: 7 }}>
+                    <Typography variant="h4" sx={{ mb: 2, color: 'var(--text-color)' }}>
+                        Self-Play Training
+                    </Typography>
+                    <Divider sx={{ mb: 3 }} />
+
+                    {selfPlaySuccess && (
+                        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSelfPlaySuccess(false)}>
+                            Self-play training started successfully!
+                        </Alert>
+                    )}
+
+                    {selfPlayError && (
+                        <Alert severity="error" sx={{ mb: 3 }}>
+                            {selfPlayError.apiMessage || selfPlayError.message}
+                        </Alert>
+                    )}
+
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Episodes"
+                                type="number"
+                                value={selfPlayForm.episodes}
+                                onChange={(e) => setSelfPlayForm(prev => ({ ...prev, episodes: parseInt(e.target.value) || 100 }))}
+                                fullWidth
+                                inputProps={{ min: 1 }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                            <FormControl fullWidth>
+                                <InputLabel>Player 1 Difficulty</InputLabel>
+                                <Select
+                                    value={selfPlayForm.playerOneDifficulty}
+                                    label="Player 1 Difficulty"
+                                    onChange={(e) => setSelfPlayForm(prev => ({ ...prev, playerOneDifficulty: e.target.value as Difficulty }))}
+                                >
+                                    <MenuItem value={Difficulty.EASY}>Easy</MenuItem>
+                                    <MenuItem value={Difficulty.MEDIUM}>Medium</MenuItem>
+                                    <MenuItem value={Difficulty.HARD}>Hard</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                            <FormControl fullWidth>
+                                <InputLabel>Player 2 Difficulty</InputLabel>
+                                <Select
+                                    value={selfPlayForm.playerTwoDifficulty}
+                                    label="Player 2 Difficulty"
+                                    onChange={(e) => setSelfPlayForm(prev => ({ ...prev, playerTwoDifficulty: e.target.value as Difficulty }))}
+                                >
+                                    <MenuItem value={Difficulty.EASY}>Easy</MenuItem>
+                                    <MenuItem value={Difficulty.MEDIUM}>Medium</MenuItem>
+                                    <MenuItem value={Difficulty.HARD}>Hard</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Typography variant="h6" sx={{ mb: 2, color: 'var(--text-color)' }}>
+                                MCTS Configuration
+                            </Typography>
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                            <TextField
+                                label="Iterations Per Move"
+                                type="number"
+                                value={selfPlayForm.mctsConfig.iterationsPerMove}
+                                onChange={(e) => setSelfPlayForm(prev => ({
+                                    ...prev,
+                                    mctsConfig: { ...prev.mctsConfig, iterationsPerMove: parseInt(e.target.value) || 1000 }
+                                }))}
+                                fullWidth
+                                inputProps={{ min: 1 }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                            <TextField
+                                label="Exploration Constant"
+                                type="number"
+                                value={selfPlayForm.mctsConfig.explorationConstant}
+                                onChange={(e) => setSelfPlayForm(prev => ({
+                                    ...prev,
+                                    mctsConfig: { ...prev.mctsConfig, explorationConstant: parseFloat(e.target.value) || 1.41 }
+                                }))}
+                                fullWidth
+                                inputProps={{ min: 0, step: 0.01 }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                            <TextField
+                                label="Timeout (ms)"
+                                type="number"
+                                value={selfPlayForm.mctsConfig.timeoutMillis}
+                                onChange={(e) => setSelfPlayForm(prev => ({
+                                    ...prev,
+                                    mctsConfig: { ...prev.mctsConfig, timeoutMillis: parseInt(e.target.value) || 5000 }
+                                }))}
+                                fullWidth
+                                inputProps={{ min: 100 }}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <MuiButton
+                                variant="contained"
+                                color="primary"
+                                onClick={handleTriggerSelfPlay}
+                                disabled={triggeringSelfPlay}
+                            >
+                                {triggeringSelfPlay ? 'Starting...' : 'Start Self-Play Training'}
+                            </MuiButton>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
 
             {/* Actions */}
             <Box sx={{ display: 'flex', gap: 2 }}>
