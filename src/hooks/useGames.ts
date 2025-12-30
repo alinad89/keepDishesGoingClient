@@ -7,11 +7,14 @@ import {
   updateGame,
   changeGameStatus,
   deleteGame,
+  triggerSelfPlay,
   type Game,
   type CreateGameRequest,
   type CreateGameResponse,
   type UpdateGameRequest,
-  type ChangeGameStatusRequest, fetchPublishedGames,
+  type ChangeGameStatusRequest,
+  type TriggerSelfPlayRequest,
+  fetchPublishedGames,
 } from '../api/games';
 import type {GameStatusAction, PlatformGame} from '../types/game.types';
 import { ApiError } from '../api/config';
@@ -24,6 +27,7 @@ export type {
   UpdateGameRequest,
   ChangeGameStatusRequest,
   GameStatusAction,
+  TriggerSelfPlayRequest,
 };
 
 export interface PlatformGamesFilters {
@@ -239,6 +243,32 @@ export function useDeleteGame() {
   return {
     deleteGame: mutate,
     deleteGameAsync: mutateAsync,
+    loading: isPending,
+    error: error instanceof ApiError ? error : null,
+    isError,
+  };
+}
+
+/**
+ * Hook to trigger self-play for a game
+ * POST /api/games/{id}/selfplay
+ */
+export function useTriggerSelfPlay() {
+  const {
+    mutate,
+    mutateAsync,
+    isPending,
+    isError,
+    error,
+  } = useMutation<void, Error, { gameId: string; request: TriggerSelfPlayRequest }>({
+    mutationFn: ({ gameId, request }) => triggerSelfPlay(gameId, request),
+  });
+
+  return {
+    triggerSelfPlay: (gameId: string, request: TriggerSelfPlayRequest) =>
+      mutate({ gameId, request }),
+    triggerSelfPlayAsync: (gameId: string, request: TriggerSelfPlayRequest) =>
+      mutateAsync({ gameId, request }),
     loading: isPending,
     error: error instanceof ApiError ? error : null,
     isError,

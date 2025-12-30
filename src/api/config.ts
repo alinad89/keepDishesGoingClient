@@ -14,6 +14,7 @@ export const DEVELOPER_ENDPOINTS = {
   games: '/games',
   gameById: (id: string) => `/games/${id}`,
   gameStatus: (id: string) => `/games/${id}/status`,
+  gameSelfPlay: (id: string) => `/games/${id}/selfplay`,
   // For JSON Server mock: use query params instead of nested routes
   gameAchievements: (gameId: string) =>
     USE_MOCK_API ? `/achievements?gameId=${gameId}` : `/games/${gameId}/achievements`,

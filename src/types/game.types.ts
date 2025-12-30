@@ -108,3 +108,26 @@ export interface ChangeGameStatusRequest {
   id: string;
   action: GameStatusAction;
 }
+
+// ========================================
+// Self-Play Types
+// ========================================
+
+export enum Difficulty {
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD',
+}
+
+export interface MctsConfig {
+  iterationsPerMove: number;
+  explorationConstant: number;
+  timeoutMillis: number;
+}
+
+export interface TriggerSelfPlayRequest {
+  episodes: number;
+  playerOneDifficulty: Difficulty;
+  playerTwoDifficulty: Difficulty;
+  mctsConfig: MctsConfig;
+}
