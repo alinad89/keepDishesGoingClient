@@ -86,6 +86,49 @@ function AppContent() {
               </DeveloperDashboardLayout>
             </Protected>
           } />
+
+          {/* Admin routes - using main navbar instead of developer layout */}
+          <Route path="/admin/games" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <ManageGamesPage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/new" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <CreateGamePage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/:id" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <GameDetailsPage />
+                </main>
+              </>
+            </Protected>
+          } />
+          <Route path="/admin/games/:id/edit" element={
+            <Protected requireRole="admin">
+              <>
+                <Navbar />
+                <main className="main-container">
+                  <EditGamePage />
+                </main>
+              </>
+            </Protected>
+          } />
+
           <Route path="/developer/games/new" element={
             <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>

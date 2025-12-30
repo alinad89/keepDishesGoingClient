@@ -37,25 +37,6 @@ function GamesPage() {
     setSelectedTags([])
     refetch()
   }
-  if (loading) {
-    return (
-      <PageContainer>
-        <Section title="Browse Games" subtitle="Loading games..." centered />
-      </PageContainer>
-    )
-  }
-
-  if (error) {
-    return (
-      <PageContainer>
-        <Section
-          title="Browse Games"
-          subtitle={`Error loading games: ${error.apiMessage}`}
-          centered
-        />
-      </PageContainer>
-    )
-  }
 
   return (
     <PageContainer>
@@ -96,8 +77,22 @@ function GamesPage() {
           </FilterBar>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+            Loading games...
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--error)' }}>
+            Error loading games: {error.apiMessage}
+          </div>
+        )}
+
         {/* Games Grid */}
-        {apiGames.length > 0 ? (
+        {!loading && !error && apiGames.length > 0 && (
           <Grid>
             {apiGames.map((game) => (
               <Card
@@ -152,7 +147,10 @@ function GamesPage() {
               </Card>
             ))}
           </Grid>
-        ) : (
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && apiGames.length === 0 && (
           <EmptyState
             title="No games found"
             description="Try adjusting your search or tag filters."

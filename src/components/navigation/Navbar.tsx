@@ -31,29 +31,36 @@ function Navbar() {
   const isAdmin = keycloak.authenticated && keycloak.hasRealmRole('admin')
   const isDeveloper = keycloak.authenticated && keycloak.hasRealmRole('developer')
 
-  const navLinks = [
+  // Base links for logged-out users
+  const baseNavLinks = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
-    { path: "/library", label: 'Library' },
-    { path: '/lobby', label: 'Lobby' },
-    { path: '/invitations', label: 'My Invitations', badge: invitationCount > 0 ? invitationCount : undefined },
-    { path: '/friends', label: 'Friends' },
-    { path: '/achievements', label: 'Achievements' },
-    { path: '/developer', label: 'Developers' },
   ]
 
+  // Build navigation links based on user role
+  let navLinks = [...baseNavLinks]
+
   if (keycloak.authenticated) {
-    navLinks.splice(3, 0, { path: '/game-history', label: 'Game History' })
-  }
-
-  // Add Game Management link for admins and developers
-  if (isAdmin || isDeveloper) {
-    navLinks.push({ path: '/developer/games', label: isAdmin ? 'Manage Games (Admin)' : 'My Games' })
-  }
-
-  // Add RAG Management link for admins only
-  if (isAdmin) {
-    navLinks.push({ path: '/admin/rag', label: 'Modify RAG' })
+    if (isAdmin) {
+      // Admin-only links: Games, Manage Games, Modify RAG
+      navLinks.push({ path: '/admin/games', label: 'Manage Games' })
+      navLinks.push({ path: '/admin/rag', label: 'Modify RAG' })
+    } else if (isDeveloper) {
+      // Developer links
+      navLinks.push({ path: '/developer', label: 'Developer Portal' })
+      navLinks.push({ path: '/developer/games', label: 'My Games' })
+    } else {
+      // Regular player links
+      navLinks = [
+        ...navLinks,
+        { path: "/library", label: 'Library' },
+        { path: '/lobby', label: 'Lobby' },
+        { path: '/game-history', label: 'Game History' },
+        { path: '/invitations', label: 'My Invitations', badge: invitationCount > 0 ? invitationCount : undefined },
+        { path: '/friends', label: 'Friends' },
+        { path: '/achievements', label: 'Achievements' },
+      ]
+    }
   }
 
 
