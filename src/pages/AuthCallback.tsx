@@ -88,15 +88,15 @@ export default function AuthCallback() {
             const response = await registerAdministratorAsync();
             console.log('[AuthCallback] Administrator registered:', response);
             sessionStorage.setItem(syncKey, 'true');
-            navigate('/developer/games');
+            navigate('/admin/games');
           } catch (error) {
             console.error('[AuthCallback] Failed to register administrator:', error);
             // Still redirect to game management, backend might already have the user
-            navigate('/developer/games');
+            navigate('/admin/games');
           }
         } else {
           // Already synced, just redirect
-          navigate('/developer/games');
+          navigate('/admin/games');
         }
       } else if (intendedRole === ROLES.DEVELOPER || hasDeveloperRole) {
         // User is a developer - register in backend and redirect to dashboard

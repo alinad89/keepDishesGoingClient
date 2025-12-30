@@ -40,6 +40,10 @@ function ManageGamesPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
+  // Determine route prefix based on user role
+  const isAdmin = hasRealmRole('admin');
+  const routePrefix = isAdmin ? '/admin/games' : '/developer/games';
+
   const handleDeleteClick = (game: Game) => {
     setSelectedGame(game);
     setDeleteDialogOpen(true);
@@ -92,7 +96,7 @@ function ManageGamesPage() {
   };
 
   const handleEditClick = (game: Game) => {
-    navigate(`/developer/games/${game.id}/edit`);
+    navigate(`${routePrefix}/${game.id}/edit`);
   };
 
   if (loading) {
@@ -150,7 +154,7 @@ function ManageGamesPage() {
         >
           View, edit, and manage all your games
         </Typography>
-        <Box component={Link} to="/developer/games/new" sx={{ textDecoration: 'none' }}>
+        <Box component={Link} to={`${routePrefix}/new`} sx={{ textDecoration: 'none' }}>
           <Button variant="primary">
             Add New Game
           </Button>
@@ -174,7 +178,7 @@ function ManageGamesPage() {
       {games.length === 0 ? (
         <FormCard title="No Games Yet" description="Start by adding your first game to get started">
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Box component={Link} to="/developer/games/new" sx={{ textDecoration: 'none' }}>
+            <Box component={Link} to={`${routePrefix}/new`} sx={{ textDecoration: 'none' }}>
               <Button variant="primary">
                 Add Your First Game
               </Button>
@@ -247,7 +251,7 @@ function ManageGamesPage() {
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 <Button
                   variant="small"
-                  onClick={() => navigate(`/developer/games/${game.id}`)}
+                  onClick={() => navigate(`${routePrefix}/${game.id}`)}
                 >
                   View Details
                 </Button>
