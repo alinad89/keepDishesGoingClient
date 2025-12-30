@@ -15,6 +15,9 @@ import {CreateGamePage} from "./pages/CreateGamePage.tsx";
 import GameDetailsPage from "./pages/GameDetailsPage.tsx";
 import EditGamePage from './pages/EditGamePage.tsx'
 import RagManagementPage from './pages/RagManagementPage'
+import DeveloperDocsPage from './pages/DeveloperDocsPage.tsx'
+import AIIntegrationPage from './pages/AIIntegrationPage.tsx'
+import AchievementIntegrationPage from './pages/AchievementIntegrationPage.tsx'
 import { WinterModeProvider, useWinterMode } from './contexts/WinterModeContext'
 
 function AppContent() {
@@ -147,6 +150,29 @@ function AppContent() {
             <Protected requireRole={['developer', 'admin']}>
               <DeveloperDashboardLayout>
                 <EditGamePage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+
+          {/* Developer Documentation Routes */}
+          <Route path="/developer/docs" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <DeveloperDocsPage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+          <Route path="/developer/docs/ai-integration" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <AIIntegrationPage />
+              </DeveloperDashboardLayout>
+            </Protected>
+          } />
+          <Route path="/developer/docs/achievements" element={
+            <Protected requireRole={['developer', 'admin']}>
+              <DeveloperDashboardLayout>
+                <AchievementIntegrationPage />
               </DeveloperDashboardLayout>
             </Protected>
           } />

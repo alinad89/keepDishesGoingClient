@@ -6,7 +6,22 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+
+/* Medium screens - reduce spacing */
+@media (max-width: 1200px) {
+  .developer-navbar-actions {
+    gap: 0.5rem;
+  }
+
+  .developer-navbar-actions button,
+  .developer-navbar-actions span {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.8rem;
+  }
+}
+
+/* Tablet and below */
+@media (max-width: 1024px) {
   .developer-navbar-actions {
     width: 100%;
     flex-direction: column;

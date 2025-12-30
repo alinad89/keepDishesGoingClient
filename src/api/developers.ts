@@ -30,3 +30,14 @@ export async function assignUserRole(role: string): Promise<void> {
     params: { role },
   });
 }
+
+/**
+ * Get the current developer's API key
+ * GET /api/developers/me/api-key
+ *
+ * Returns the developer's API key for use in their game backends
+ */
+export async function getDeveloperApiKey(): Promise<{ currentApiKey: string }> {
+  const response = await http.get<{ currentApiKey: string }>('/developers/me/api-key');
+  return response.data;
+}
