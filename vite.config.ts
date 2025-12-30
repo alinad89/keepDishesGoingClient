@@ -6,6 +6,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      // Recommendations service (must be before /api to take precedence)
+      '/api/recommendations': {
+        target: 'http://localhost:6611',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
       '/api': {
         target: 'http://localhost:8082',
         changeOrigin: true,

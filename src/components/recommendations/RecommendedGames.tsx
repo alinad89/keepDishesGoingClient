@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useRecommendations } from '../../hooks/useRecommendations';
 import { fetchPlatformGameById } from '../../api/platformGames';
 import type { PlatformGameDetails } from '../../types/game.types';
@@ -7,6 +8,7 @@ import Button from '../ui/Button';
 import PaymentButton from '../ui/PaymentButton';
 import { useAddGameToLibrary } from '../../hooks/useGameLibrary';
 import { Grid } from '../common';
+import type { ApiError } from '../../api/config';
 
 interface RecommendedGamesProps {
   onViewDetails?: (gameId: string) => void;
@@ -19,6 +21,23 @@ function RecommendedGames({ onViewDetails }: RecommendedGamesProps) {
   const [fetchError, setFetchError] = useState(false);
   const { addGame, isPending: addingToLibrary } = useAddGameToLibrary();
 
+  const handleAddGame = (gameId: string, gameName: string) => {
+    addGame(
+      { gameId },
+      {
+        onSuccess: () => {
+          toast.success(`${gameName} added to your library!`);
+        },
+        onError: (error) => {
+          const apiError = error as ApiError;
+          toast.error(
+            apiError?.apiMessage || 'Failed to add game to library. Please try again.'
+          );
+        },
+      }
+    );
+  };
+
   useEffect(() => {
     async function fetchRecommendedGames() {
       if (!recommendations?.recommendations || recommendations.recommendations.length === 0) {
@@ -29,10 +48,14 @@ function RecommendedGames({ onViewDetails }: RecommendedGamesProps) {
       setFetchError(false);
       try {
         const gamePromises = recommendations.recommendations.map((rec) =>
-          fetchPlatformGameById(rec.id)
+          fetchPlatformGameById(rec.id).catch((error) => {
+            console.warn(`Skipping unavailable game ${rec.id}:`, error.message || error);
+            return null;
+          })
         );
-        const fetchedGames = await Promise.all(gamePromises);
-        setGames(fetchedGames);
+        const results = await Promise.all(gamePromises);
+        const availableGames = results.filter((game): game is PlatformGameDetails => game !== null);
+        setGames(availableGames);
       } catch (error) {
         console.error('Failed to fetch recommended games:', error);
         setFetchError(true);
@@ -119,7 +142,7 @@ function RecommendedGames({ onViewDetails }: RecommendedGamesProps) {
                   <Button
                     variant="small"
                     disabled={addingToLibrary}
-                    onClick={() => addGame({ gameId: game.id })}
+                    onClick={() => handleAddGame(game.id, game.name)}
                   >
                     {addingToLibrary ? 'Adding...' : 'Aquire'}
                   </Button>
