@@ -1,11 +1,11 @@
 import type { ApiErrorResponse } from '../types/api-error.types';
 import keycloak from '../keycloak';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE_URL = 'http://localhost:8082/api';
 
-export const MOCK_API_URL = import.meta.env.VITE_MOCK_API_URL || 'http://localhost:3001';
+export const MOCK_API_URL = 'http://localhost:3001';
 
-export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
+export const USE_MOCK_API = false;
 
 export const EFFECTIVE_API_URL = USE_MOCK_API ? MOCK_API_URL : API_BASE_URL;
 

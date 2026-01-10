@@ -1,6 +1,6 @@
 import {addGameToFavourites, addGameToLibrary, fetchGameLibrary} from "../api/gameLibrary.ts";
 import type {AddGameToLibraryRequest, AddToFavouriteRequest, GameLibraryResponse} from "../types/game-library.types.ts";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient, type UseMutateFunction} from "@tanstack/react-query";
 
 /**
  * Hook to fetch a game library of a current user
@@ -47,7 +47,7 @@ export function useAddGameToLibrary() {
         }
     })
     return {
-        addGame: (request:AddGameToLibraryRequest) => mutate(request),
+        addGame: mutate,
         isPending,
         isError,
         error

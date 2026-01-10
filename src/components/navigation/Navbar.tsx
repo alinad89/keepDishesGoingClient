@@ -5,6 +5,12 @@ import './Navbar.css'
 import {useMyLobbyInvitations} from "../../hooks/useLobbies.ts";
 import WinterToggleButton from '../ui/WinterToggleButton';
 
+interface NavLink {
+  path: string;
+  label: string;
+  badge?: number;
+}
+
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -32,13 +38,13 @@ function Navbar() {
   const isDeveloper = keycloak.authenticated && keycloak.hasRealmRole('developer')
 
   // Base links for logged-out users
-  const baseNavLinks = [
+  const baseNavLinks: NavLink[] = [
     { path: '/', label: 'Home' },
     { path: '/games', label: 'Games' },
   ]
 
   // Build navigation links based on user role
-  let navLinks = [...baseNavLinks]
+  let navLinks: NavLink[] = [...baseNavLinks]
 
   if (keycloak.authenticated) {
     if (isAdmin) {

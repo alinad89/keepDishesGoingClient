@@ -7,13 +7,13 @@ import Keycloak from 'keycloak-js';
 /**
  * Keycloak client instance configuration
  *
- * This initializes the Keycloak client with configuration from environment variables.
+ * This initializes the Keycloak client with hardcoded configuration.
  * The client handles OAuth 2.0 / OpenID Connect authentication flow.
  */
 const keycloakConfig = {
-  url: import.meta.env.VITE_KEYCLOAK_URL,
-  realm: import.meta.env.VITE_KEYCLOAK_REALM,
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+  url: 'http://localhost:8180/',
+  realm: 'sillyseal',
+  clientId: 'sillyseal-frontend',
 };
 
 // Initialize Keycloak instance

@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Box,
   Dialog,
   DialogTitle,
   DialogContent,
-  IconButton,
-  Typography
+  IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CodeIcon from '@mui/icons-material/Code';

@@ -18,8 +18,7 @@ interface UseWebSocketOptions {
 }
 
 // WebSocket base URL - use current origin to go through Vite proxy
-const WS_BASE_URL =
-    import.meta.env.VITE_WS_BASE_URL || window.location.origin;
+const WS_BASE_URL = 'http://localhost:8082';
 
 export function useWebSocket({
     enabled,

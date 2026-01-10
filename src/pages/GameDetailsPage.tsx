@@ -19,7 +19,6 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Grid,
 } from '@mui/material';
 import { useGame, useTriggerSelfPlay } from '../hooks/useGames';
 import {
@@ -434,8 +433,8 @@ function GameDetailsPage() {
                         </Alert>
                     )}
 
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                             <TextField
                                 label="Episodes"
                                 type="number"
@@ -444,9 +443,6 @@ function GameDetailsPage() {
                                 fullWidth
                                 inputProps={{ min: 1 }}
                             />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
                             <FormControl fullWidth>
                                 <InputLabel>Player 1 Difficulty</InputLabel>
                                 <Select
@@ -459,9 +455,9 @@ function GameDetailsPage() {
                                     <MenuItem value={Difficulty.HARD}>Hard</MenuItem>
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={6}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                             <FormControl fullWidth>
                                 <InputLabel>Player 2 Difficulty</InputLabel>
                                 <Select
@@ -474,15 +470,13 @@ function GameDetailsPage() {
                                     <MenuItem value={Difficulty.HARD}>Hard</MenuItem>
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12}>
-                            <Typography variant="h6" sx={{ mb: 2, color: 'var(--text-color)' }}>
-                                MCTS Configuration
-                            </Typography>
-                        </Grid>
+                        <Typography variant="h6" sx={{ color: 'var(--text-color)' }}>
+                            MCTS Configuration
+                        </Typography>
 
-                        <Grid item xs={12} md={4}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
                             <TextField
                                 label="Iterations Per Move"
                                 type="number"
@@ -494,9 +488,6 @@ function GameDetailsPage() {
                                 fullWidth
                                 inputProps={{ min: 1 }}
                             />
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
                             <TextField
                                 label="Exploration Constant"
                                 type="number"
@@ -508,9 +499,6 @@ function GameDetailsPage() {
                                 fullWidth
                                 inputProps={{ min: 0, step: 0.01 }}
                             />
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
                             <TextField
                                 label="Timeout (ms)"
                                 type="number"
@@ -522,9 +510,9 @@ function GameDetailsPage() {
                                 fullWidth
                                 inputProps={{ min: 100 }}
                             />
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12}>
+                        <Box>
                             <MuiButton
                                 variant="contained"
                                 color="primary"
@@ -533,8 +521,8 @@ function GameDetailsPage() {
                             >
                                 {triggeringSelfPlay ? 'Starting...' : 'Start Self-Play Training'}
                             </MuiButton>
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 </CardContent>
             </Card>
 

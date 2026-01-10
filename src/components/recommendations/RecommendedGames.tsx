@@ -22,20 +22,17 @@ function RecommendedGames({ onViewDetails }: RecommendedGamesProps) {
   const { addGame, isPending: addingToLibrary } = useAddGameToLibrary();
 
   const handleAddGame = (gameId: string, gameName: string) => {
-    addGame(
-      { gameId },
-      {
-        onSuccess: () => {
-          toast.success(`${gameName} added to your library!`);
-        },
-        onError: (error) => {
-          const apiError = error as ApiError;
-          toast.error(
-            apiError?.apiMessage || 'Failed to add game to library. Please try again.'
-          );
-        },
-      }
-    );
+    addGame({ gameId }, {
+      onSuccess: () => {
+        toast.success(`${gameName} added to your library!`);
+      },
+      onError: (error: unknown) => {
+        const apiError = error as ApiError;
+        toast.error(
+          apiError?.apiMessage || 'Failed to add game to library. Please try again.'
+        );
+      },
+    });
   };
 
   useEffect(() => {
